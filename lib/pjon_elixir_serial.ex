@@ -1,4 +1,4 @@
-defmodule PjonElixir do
+defmodule PjonElixirSerial do
   use Application
 
   @moduledoc """
@@ -7,7 +7,7 @@ defmodule PjonElixir do
 
   def start(_type, _args) do
     children = [
-      {PjonElixir.Proc, name: PjonElixir.Proc}
+      {PjonElixirSerial.Proc, name: PjonElixirSerial.Proc}
     ]
     Supervisor.start_link(children, strategy: :one_for_one)
   end

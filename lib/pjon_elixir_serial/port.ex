@@ -1,12 +1,16 @@
-defmodule PjonElixir.Proc do
+defmodule PjonElixirSerial.Proc do
   @moduledoc """
-  Documentation for PjonElixir.
+  Documentation for PjonElixirSerial.
   """
 
   use GenServer
 
   def to_binary(data) do
-    MsgPax.binary_to_term(data)
+    MsgPax.pack!(data)
+  end
+
+  def from_binary(data) do
+    MsgPax.unpack!(data)
   end
 
   @doc """

@@ -3,22 +3,24 @@
 
 /* Serial ----------------------------------------------------------------- */
 
+#include "serial/serial.h"
+
 #ifndef PJON_SERIAL_TYPE
-#define PJON_SERIAL_TYPE int16_t
+#define PJON_SERIAL_TYPE serial::Serial *
 #endif
 
 int serial_available;
 
 #ifndef PJON_SERIAL_AVAILABLE
-#define PJON_SERIAL_AVAILABLE(S) ((CSERIAL_OK == c_serial_get_available(S, serial_available)) && serial_available > 0)
+#define PJON_SERIAL_AVAILABLE(S) S->available()
 #endif
 
 #ifndef PJON_SERIAL_WRITE
-#define PJON_SERIAL_WRITE(S, C) serialPutchar(S, C)
+#define PJON_SERIAL_WRITE(S, C) S->write(C, 1)
 #endif
 
 #ifndef PJON_SERIAL_READ
-#define PJON_SERIAL_READ(S) serialGetchar(S)
+#define PJON_SERIAL_READ(S) S->read(1).c_str[0]
 #endif
 
 #ifndef PJON_SERIAL_FLUSH

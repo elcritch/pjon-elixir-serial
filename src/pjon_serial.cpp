@@ -1,3 +1,5 @@
+#include "pjon_serial.h"
+
 #include <stdio.h>
 #include <inttypes.h>
 #include <stdlib.h>
@@ -14,13 +16,13 @@ typedef size_t pk_len_t;
 #define BUFFER_SIZE 4096
 #define BUS_ADDR 42
 #define TX_PACKET_ADDR 47
+#define PJON_SERIAL_TYPE int16_t
 
 /* Maximum timeframe between transmission and synchronous acknowledgement. */
 #define TS_RESPONSE_TIME_OUT 10000
 
 // Max number of old packet ids stored to avoid duplication
 #define LINUX 1
-#define RPI 1
 
 #define PJON_INCLUDE_PACKET_ID true
 #define PJON_MAX_RECENT_PACKET_IDS 10
@@ -134,11 +136,14 @@ void error_handler(uint8_t code,
 }
 
 int main() {
-  uint32_t baud_rate = 115200;
   PJON<ThroughSerial> bus(BUS_ADDR);
   std::cerr << "Opening serial..." << std::endl;
 
-  int sfd = serialOpen("/dev/ttyUSB0", baud_rate);
+  Port p;
+  p.open("/dev/ttyUSB0");
+  p.set(115200, Parity::none, StopBits::one, DataBits::eight);
+
+  int sfd = p.native_handle();
 
   if (sfd < 0) {
     std::cerr << "Serial open fail!" << std::endl;

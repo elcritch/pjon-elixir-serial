@@ -120,12 +120,14 @@ void error_handler(uint8_t code,
   }
 }
 
-int main() {
+int main(int argc, char const *argv[]) {
+  const char *device = argv[1];
+  int baud_rate = atoi(argv[2]);
+
   std::cerr << "Opening serial..." << std::endl;
-  int baud_rate = 115200;
   serial_t serial;
   /* Open /dev/ttyUSB0 with baudrate 115200, and defaults of 8N1, no flow control */
-  if (serial_open(&serial, "/dev/ttyUSB0", baud_rate) < 0) {
+  if (serial_open(&serial, device, baud_rate) < 0) {
     fprintf(stderr, "serial_open(): %s\n", serial_errmsg(&serial));
     exit(1);
   }

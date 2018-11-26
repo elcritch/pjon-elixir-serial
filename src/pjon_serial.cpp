@@ -12,91 +12,11 @@
 
 
 #include <PJON.h>
+#include "erl_comm.hpp"
 
 void pjon_serial_delay(long ms) {
   PJON_DELAY_MICROSECONDS(ms);
 }
-
-/// Read command packet from STDIN
-size_t read_port_cmd(char *buffer, pk_len_t len)
-{
-  pk_len_t packet_len = 0;
-  size_t lens_read = fread(&packet_len, PACKET_SZ, 1, stdin);
-
-  #ifdef IS_LITTLE_ENDIAN
-    packet_len = swap_endian<pk_len_t>(packet_len);
-  #endif
-
-  // exit if we can't read sizeof(pk_len_t) uint8_t's
-  if (lens_read == 0) {
-    exit(2);
-  }
-  else if (lens_read > 1) {
-    std::cerr << "Error reading length of cmd packet " << std::endl;
-    exit(3);
-  }
-
-  if (packet_len >= len) {
-    std::cerr << "Packet larger than buffer " << packet_len << std::endl;
-    exit(4);
-  }
-
-  // if we can't read complete message data, exit
-  size_t bytes_read = fread(buffer, 1, packet_len, stdin);
-
-  std::cerr << "Port read: " << bytes_read << std::endl;
-
-  if (bytes_read != packet_len) {
-    std::cerr
-      << "Read (less) packet bytes than expected "
-      << bytes_read
-      << packet_len
-      << std::endl;
-
-    exit(5);
-  }
-
-  return packet_len;
-}
-
-/// Write command packet to STDOUT
-size_t write_port_cmd(uint8_t *buffer, pk_len_t packet_len)
-{
-
-  pk_len_t len_out = packet_len;
-
-  std::cerr << "Writing bytes: " << len_out << std::endl;
-
-
-  // swap for endianness
-  #ifdef IS_LITTLE_ENDIAN
-    len_out = swap_endian<pk_len_t>(len_out);
-  #endif
-
-  std::cerr << "Writing: bytes swapped: " << len_out << std::endl;
-  size_t lens_wrote = fwrite(&len_out, sizeof(len_out), 1, stdout);
-
-  if (lens_wrote != 1) {
-    std::cerr << "Error writing length of data packet " << std::endl;
-    exit(13);
-  }
-
-  size_t bytes_wrote = fwrite(buffer, sizeof(uint8_t), packet_len, stdout);
-
-  if (bytes_wrote != packet_len) {
-    std::cerr
-      << "Wrote (less) packet bytes than expected "
-      << bytes_wrote * sizeof(uint8_t)
-      << " of "
-      << packet_len
-      << std::endl;
-
-     exit(15);
-  }
-
-  // fflush(stdout);
-  return bytes_wrote;
-};
 
 std::atomic<size_t> port_rx_len;
 char port_rx_buffer[BUFFER_SIZE];
@@ -105,7 +25,7 @@ void receiver_function(uint8_t *payload,
                        uint16_t length,
                        const PJON_Packet_Info &packet_info)
 {
-  write_port_cmd(payload, length);
+  write_port_cmd<pk_len_t>( (char*)payload, length);
 }
 
 void error_handler(uint8_t code,
@@ -122,7 +42,7 @@ void error_handler(uint8_t code,
 
 int main(int argc, char const *argv[]) {
   const char *device = argv[1];
-  int baud_rate = atoi(argv[2]);
+  int baud_rate = std::stoi(argv[2]);
 
   std::cerr << "Opening serial..." << std::endl;
   serial_t serial;
@@ -149,7 +69,7 @@ int main(int argc, char const *argv[]) {
     while (true) {
       if (port_rx_len.load() == 0) {
         pk_len_t cmd_sz =
-          read_port_cmd( port_rx_buffer, PJON_PACKET_MAX_LENGTH);
+          read_port_cmd<pk_len_t>( port_rx_buffer, PJON_PACKET_MAX_LENGTH);
         port_rx_len = cmd_sz;
       }
       PJON_DELAY_MICROSECONDS(20000);

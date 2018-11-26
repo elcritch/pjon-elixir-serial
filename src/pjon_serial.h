@@ -6,7 +6,7 @@ extern "C" {
 }
 
 #define PACKET_SZ 2
-typedef size_t pk_len_t;
+typedef uint16_t pk_len_t;
 
 #define BUFFER_SIZE 4096
 #define BUS_ADDR 42

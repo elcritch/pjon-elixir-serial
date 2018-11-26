@@ -45,18 +45,18 @@ defmodule PjonElixirSerial.Proc do
   end
 
   def register(), do: register(self())
+
   def register(pid) do
     {:ok, _} = Registry.register(PjonRegistry, :listeners, {:on, :data, pid})
   end
 
   def handle_info({port, {:data, rawdata}}, %{port: port} = state) do
-    data = upack!(rawdata)
+    data = rawdata |> upack!()
 
     # Dispatch
     Registry.dispatch(PjonRegistry, :listeners, fn entries ->
       for {pid, item} <- entries,
-          {:on, :data, topid} = item
-      do
+          {:on, :data, topid} = item do
         send(pid, {:serial, :data, data})
       end
     end)

@@ -22,7 +22,7 @@
   #include <cinttypes>
   #include <cstdlib>
   #include <cstring>
-  #include <wiringPi.h>
+  /* #include <wiringPi.h> */
   #include <wiringSerial.h>
 
   /* Generic constants ---------------------------------------------------- */

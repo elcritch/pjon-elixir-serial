@@ -9,7 +9,7 @@
 #include <mutex>
 
 #define PACKET_SZ 2
-typedef pk_len_t size_t;
+typedef size_t pk_len_t;
 
 #define BUFFER_SIZE 4096
 #define BUS_ADDR 42
@@ -19,6 +19,9 @@ typedef pk_len_t size_t;
 #define TS_RESPONSE_TIME_OUT 10000
 
 // Max number of old packet ids stored to avoid duplication
+#define LINUX 1
+#define RPI 1
+
 #define PJON_INCLUDE_PACKET_ID true
 #define PJON_MAX_RECENT_PACKET_IDS 10
 #define PJON_PACKET_MAX_LENGTH 256

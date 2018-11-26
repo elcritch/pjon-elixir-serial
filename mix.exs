@@ -1,9 +1,9 @@
-defmodule PjonElixir.MixProject do
+defmodule PjonElixirSerial.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :pjon_elixir,
+      app: :pjon_elixir_serial,
       version: "0.1.0",
       elixir: "~> 1.7",
       start_permanent: Mix.env() == :prod,
@@ -19,7 +19,7 @@ defmodule PjonElixir.MixProject do
 
   defp deps do
     [
-      {:msgpax, "~> 2.0"},
+      {:msgpax, "~> 2.0"}
     ]
   end
 end

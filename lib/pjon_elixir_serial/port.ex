@@ -5,11 +5,11 @@ defmodule PjonElixirSerial.Proc do
 
   use GenServer
 
-  def to_binary(data) do
+  def pack!(data) do
     MsgPax.pack!(data)
   end
 
-  def from_binary(data) do
+  def unpack!(data) do
     MsgPax.unpack!(data)
   end
 
@@ -19,11 +19,17 @@ defmodule PjonElixirSerial.Proc do
     GenServer.start_link(PjonElixir.Proc, opts, name: __MODULE__)
   end
 
-  def init(opts) do
-    port = Port.open({:spawn, '#{cmd}'}, [:binary, :exit_status, packet: 2] ++ opts)
+  @init_arg Application.get_env(:pjon_elixir_serial, init_arg, "\n")
 
-    if Keyword.get(opts, :no_init, false) do
-      send(port, {self(), {:command, :erlang.term_to_binary(initarg)}})
+  def init(opts) do
+    port_opts = [:binary, :exit_status, packet: 2]
+    port_bin = Path.join(:code.priv_dir(:my_app), "pjon_serial")
+
+    # Start Port Binary
+    port = Port.open({:spawn, '#{port_bin}'}, port_opts ++ opts)
+
+    unless Keyword.get(opts, :no_init, false) do
+      send(port, {self(), {:command, pack!(@init_arg)}})
     end
 
     {:ok, %{port: port}}
@@ -34,36 +40,48 @@ defmodule PjonElixirSerial.Proc do
   end
 
   def handle_info({port, {:exit_status, _}}, %{port: port} = state) do
-      {:stop, :port_terminated, state}
+    {:stop, :port_terminated, state}
   end
 
-  def handle_info({port, {:data, data}}, %{port: port} = state) do
-    if event_manager do
-      :gen_event.notify(event_manager, )
-    end
+  def register(), do: register(self())
+
+  def register(pid) do
+    {:ok, _} = Registry.register(PjonElixirSerial.Registry, :listeners, :data)
+  end
+
+  def handle_info({port, {:data, rawdata}}, %{port: port} = state) do
+    data = upack!(rawdata)
+
+    Registry.dispatch(PjonElixirSerial.Registry, :listeners, fn entries ->
+      for {pid, :data} <- entries do
+        send(pid, {:serial, :data, data})
+      end
+    end)
+
     {:noreply, state}
   end
 
   def handle_cast(term, {port, _} = state) do
-    send(port, {self(), {:command, :erlang.term_to_binary(term)}})
+    send(port, {self(), {:command, pack(term)}})
     {:noreply, state}
   end
 
   def handle_call(term, _reply_to, {port, _} = state) do
-    send(port, {self(), {:command, :erlang.term_to_binary(term)}})
+    send(port, {self(), {:command, pack(term)}})
 
     res =
       receive do
-        {^port, {:data, b}} ->
-          :erlang.binary_to_term(b)
+        {^port, {:data, rawdata}} ->
+          unpack!(rawdata)
 
         # catch exit msg and resend it
         {^port, {:exit_status, _}} = exit_msg ->
-          send(self(), exit_msg)
+          self()
+          |> send(exit_msg)
+
           {:error, :port_terminated}
       end
 
     {:reply, res, state}
   end
 end
-

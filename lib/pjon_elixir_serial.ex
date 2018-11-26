@@ -1,4 +1,5 @@
-defmodule PjonElixirSerial do
+defmodule PjonElixirSerial.Application do
+  require Logger
   use Application
 
   @moduledoc """

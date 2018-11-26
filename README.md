@@ -1,4 +1,4 @@
-# PjonElixir
+# PjonElixirSerial
 
 **TODO: Add description**
 
@@ -10,7 +10,7 @@ by adding `pjon_elixir` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:pjon_elixir, "~> 0.1.0"}
+    {:pjon_elixir_serial, "~> 0.1.0"}
   ]
 end
 ```

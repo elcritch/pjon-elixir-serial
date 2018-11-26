@@ -7,15 +7,17 @@
 #include <sys/time.h>
 #include <thread>
 #include <iostream>
+#include <fstream>
 #include <atomic>
 #include <mutex>
 
 
 #include <PJON.h>
+
 #include "erl_comm.hpp"
 
 void pjon_serial_delay(long ms) {
-  PJON_DELAY_MICROSECONDS(ms);
+  // usleep(ms);
 }
 
 std::atomic<size_t> port_rx_len;
@@ -25,6 +27,7 @@ void receiver_function(uint8_t *payload,
                        uint16_t length,
                        const PJON_Packet_Info &packet_info)
 {
+  std::cerr << "BUS rx'ed packet length: " << length << std::endl;
   write_port_cmd<pk_len_t>( (char*)payload, length);
 }
 
@@ -43,6 +46,10 @@ void error_handler(uint8_t code,
 int main(int argc, char const *argv[]) {
   const char *device = argv[1];
   int baud_rate = std::stoi(argv[2]);
+
+  std::ofstream out("/tmp/pjon_serial.txt");
+  std::streambuf *coutbuf = std::cout.rdbuf(); //save old buf
+  std::cerr.rdbuf(out.rdbuf()); //redirect std::cout to out.txt!
 
   std::cerr << "Opening serial..." << std::endl;
   serial_t serial;
@@ -66,26 +73,37 @@ int main(int argc, char const *argv[]) {
 
   // Thread to handle reading input port commands
   std::thread([&]{
+    port_rx_len = 0;
     while (true) {
       if (port_rx_len.load() == 0) {
+        // std::cerr << "port port_command reading... " << std::endl;
         pk_len_t cmd_sz =
           read_port_cmd<pk_len_t>( port_rx_buffer, PJON_PACKET_MAX_LENGTH);
+        // std::cerr << "port rx'ed port_command length: " << cmd_sz << std::endl;
+        // std::cerr << "port rx'ed port_command str: " << port_rx_buffer << std::endl;
         port_rx_len = cmd_sz;
+        if (cmd_sz == 0) {
+          // usleep(40*1000);
+        }
       }
-      PJON_DELAY_MICROSECONDS(20000);
     }
   }).detach();
 
   do {
     bus.update();
-    bus.receive(TS_TIME_IN + 5000);
+    bus.receive(10);
+
+    std::cerr << "." ;
 
     if (port_rx_len.load() > 0) {
-      int resp = bus.send_packet(TX_PACKET_ADDR, port_rx_buffer, port_rx_len);
+      std::cerr << "sending packet: " << port_rx_len.load() << std::endl;
+      int resp = bus.send_packet(TX_PACKET_ADDR, port_rx_buffer, port_rx_len.load());
       port_rx_len = 0;
     }
-  } while (!feof(stdin));
+  // } while (!std::cout.eof());
+  } while (true);
 
+  std::cerr << "exiting..." << std::endl;
   exit(0);
 };
 

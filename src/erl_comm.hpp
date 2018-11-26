@@ -15,8 +15,24 @@
  uint16_t parse_packet_len(uint16_t len) { return ntohs(len); }
  uint32_t parse_packet_len(uint32_t len) { return ntohl(len); }
 
+uint8_t pack_packet_len(uint8_t len) { return len; }
+uint16_t pack_packet_len(uint16_t len) { return htons(len); }
+uint32_t pack_packet_len(uint32_t len) { return htonl(len); }
+
+#include <stdio.h>
+#include <sys/select.h>
+
+int is_closed(FILE *fp) {
+  // int fd = fileno(fp);
+  long result = ftell(fp);
+  std::cerr << "stdin ftell: " << result << std::endl;
+  std::cerr << "stdin ftell errno: " << errno << std::endl;
+  return result < 0 && errno == EBADF;
+}
+
 /// Read command packet from STDIN
 /// the type `PacketLenType` must be the same as the Erlang Packet size (1, 2, or 4 bytes long, eg. char, uint16_t, or uint32_t respectively)
+
 template <typename PacketLenType>
 size_t read_port_cmd(char *buffer, PacketLenType len)
 {
@@ -71,10 +87,8 @@ size_t write_port_cmd(char *buffer, PacketLenType packet_len)
 
   std::cerr << "Writing bytes: " << len_out << std::endl;
 
-  // swap for endianness
-#ifdef IS_LITTLE_ENDIAN
-  len_out = swap_endian<PacketLenType>(len_out);
-#endif
+  // Pack Byte
+  len_out = pack_packet_len(len_out);
 
 
   std::cerr << "Writing: bytes swapped: " << len_out << std::endl;
@@ -88,6 +102,8 @@ size_t write_port_cmd(char *buffer, PacketLenType packet_len)
     std::cerr << "Error writing length of data packet" << std::endl;
     exit(13);
   }
+
+  std::cerr << " writing port_command of packet: " << packet_len << " " << buffer << std::endl;
 
   size_t bytes_wrote = fwrite(buffer, sizeof(char), packet_len, stdout);
 

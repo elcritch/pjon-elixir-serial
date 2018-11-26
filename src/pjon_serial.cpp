@@ -10,27 +10,12 @@
 #include <atomic>
 #include <mutex>
 
-#define PACKET_SZ 2
-typedef size_t pk_len_t;
-
-#define BUFFER_SIZE 4096
-#define BUS_ADDR 42
-#define TX_PACKET_ADDR 47
-#define PJON_SERIAL_TYPE int16_t
-
-/* Maximum timeframe between transmission and synchronous acknowledgement. */
-#define TS_RESPONSE_TIME_OUT 10000
-
-// Max number of old packet ids stored to avoid duplication
-#define LINUX 1
-
-#define PJON_INCLUDE_PACKET_ID true
-#define PJON_MAX_RECENT_PACKET_IDS 10
-#define PJON_PACKET_MAX_LENGTH 256
-
-#define PJON_INCLUDE_TS true // Include only ThroughSerial
 
 #include <PJON.h>
+
+void pjon_serial_delay(long ms) {
+  PJON_DELAY_MICROSECONDS(ms);
+}
 
 /// Read command packet from STDIN
 size_t read_port_cmd(char *buffer, pk_len_t len)
@@ -42,7 +27,7 @@ size_t read_port_cmd(char *buffer, pk_len_t len)
     packet_len = swap_endian<pk_len_t>(packet_len);
   #endif
 
-  // exit if we can't read sizeof(pk_len_t) byte's
+  // exit if we can't read sizeof(pk_len_t) uint8_t's
   if (lens_read == 0) {
     exit(2);
   }
@@ -75,7 +60,7 @@ size_t read_port_cmd(char *buffer, pk_len_t len)
 }
 
 /// Write command packet to STDOUT
-size_t write_port_cmd(byte *buffer, pk_len_t packet_len)
+size_t write_port_cmd(uint8_t *buffer, pk_len_t packet_len)
 {
 
   pk_len_t len_out = packet_len;
@@ -96,12 +81,12 @@ size_t write_port_cmd(byte *buffer, pk_len_t packet_len)
     exit(13);
   }
 
-  size_t bytes_wrote = fwrite(buffer, sizeof(byte), packet_len, stdout);
+  size_t bytes_wrote = fwrite(buffer, sizeof(uint8_t), packet_len, stdout);
 
   if (bytes_wrote != packet_len) {
     std::cerr
       << "Wrote (less) packet bytes than expected "
-      << bytes_wrote * sizeof(byte)
+      << bytes_wrote * sizeof(uint8_t)
       << " of "
       << packet_len
       << std::endl;
@@ -114,7 +99,7 @@ size_t write_port_cmd(byte *buffer, pk_len_t packet_len)
 };
 
 std::atomic<size_t> port_rx_len;
-uint8_t port_rx_buffer[BUFFER_SIZE];
+char port_rx_buffer[BUFFER_SIZE];
 
 void receiver_function(uint8_t *payload,
                        uint16_t length,
@@ -136,24 +121,19 @@ void error_handler(uint8_t code,
 }
 
 int main() {
-  PJON<ThroughSerial> bus(BUS_ADDR);
   std::cerr << "Opening serial..." << std::endl;
-
-  Port p;
-  p.open("/dev/ttyUSB0");
-  p.set(115200, Parity::none, StopBits::one, DataBits::eight);
-
-  int sfd = p.native_handle();
-
-  if (sfd < 0) {
-    std::cerr << "Serial open fail!" << std::endl;
-    exit(6);
+  int baud_rate = 115200;
+  serial_t serial;
+  /* Open /dev/ttyUSB0 with baudrate 115200, and defaults of 8N1, no flow control */
+  if (serial_open(&serial, "/dev/ttyUSB0", baud_rate) < 0) {
+    fprintf(stderr, "serial_open(): %s\n", serial_errmsg(&serial));
+    exit(1);
   }
-
   std::cerr << "Setting serial..." << std::endl;
 
-  bus.strategy.set_serial(s);
-  bus.strategy.set_baud_rate(baud_rate);
+  PJON<ThroughSerial> bus(BUS_ADDR);
+  bus.strategy.set_serial(&serial);
+  // bus.strategy.set_baud_rate(baud_rate);
   bus.set_receiver(receiver_function);
   bus.set_error(error_handler);
 
@@ -167,10 +147,10 @@ int main() {
     while (true) {
       if (port_rx_len.load() == 0) {
         pk_len_t cmd_sz =
-          read_port_cmd(port_rx_buffer, PJON_PACKET_MAX_LENGTH);
+          read_port_cmd( port_rx_buffer, PJON_PACKET_MAX_LENGTH);
         port_rx_len = cmd_sz;
       }
-      usleep(20000);
+      PJON_DELAY_MICROSECONDS(20000);
     }
   }).detach();
 

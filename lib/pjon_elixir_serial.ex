@@ -7,7 +7,7 @@ defmodule PjonElixirSerial do
 
   def start(_type, _args) do
     children = [
-      {Registry, keys: :duplicate, name: PjonElixirSerial.Registry},
+      {Registry, keys: :duplicate, name: PjonElixirSerial.PjonRegistry},
       {PjonElixirSerial.Proc, name: PjonElixirSerial.Proc}
     ]
 

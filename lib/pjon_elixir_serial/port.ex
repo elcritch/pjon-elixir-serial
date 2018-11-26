@@ -2,6 +2,7 @@ defmodule PjonElixirSerial.Proc do
   @moduledoc """
   Documentation for PjonElixirSerial.
   """
+  alias PjonElixirSerial.PjonRegistry
 
   use GenServer
 
@@ -44,16 +45,18 @@ defmodule PjonElixirSerial.Proc do
   end
 
   def register(), do: register(self())
-
   def register(pid) do
-    {:ok, _} = Registry.register(PjonElixirSerial.Registry, :listeners, :data)
+    {:ok, _} = Registry.register(PjonRegistry, :listeners, {:on, :data, pid})
   end
 
   def handle_info({port, {:data, rawdata}}, %{port: port} = state) do
     data = upack!(rawdata)
 
-    Registry.dispatch(PjonElixirSerial.Registry, :listeners, fn entries ->
-      for {pid, :data} <- entries do
+    # Dispatch
+    Registry.dispatch(PjonRegistry, :listeners, fn entries ->
+      for {pid, item} <- entries,
+          {:on, :data, topid} = item
+      do
         send(pid, {:serial, :data, data})
       end
     end)
@@ -61,13 +64,14 @@ defmodule PjonElixirSerial.Proc do
     {:noreply, state}
   end
 
-  def handle_cast(term, {port, _} = state) do
-    send(port, {self(), {:command, pack(term)}})
+  def handle_cast(term, %{port: port} = state) do
+    send(port, {self(), {:command, term |> pack!}})
+
     {:noreply, state}
   end
 
-  def handle_call(term, _reply_to, {port, _} = state) do
-    send(port, {self(), {:command, pack(term)}})
+  def handle_call(term, _reply_to, %{port: port} = state) do
+    send(port, {self(), {:command, term |> pack!}})
 
     res =
       receive do

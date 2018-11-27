@@ -10,6 +10,7 @@
 #include <iostream>
 #include <arpa/inet.h>
 
+#include "pjon_serial.h"
 // template <typename PacketLenType> size_t packet_len(PacketLenType len);
  uint8_t parse_packet_len(uint8_t len) { return len; }
  uint16_t parse_packet_len(uint16_t len) { return ntohs(len); }
@@ -47,8 +48,10 @@ size_t read_port_cmd(char *buffer, PacketLenType len)
 
   // if we can't read sizeof(PacketLenType) char's, exit
   if (lens_read == 0) {
+    std::cerr << "Read Zero Packet " << std::endl;
     return 0;
   }
+
   else if (lens_read > 1) {
     std::cerr << "Error reading length of cmd packet " << std::endl;
     exit(3);

@@ -3,10 +3,16 @@
 
 #include <stdio.h>
 #include <stdint.h>
-
-/* extern "C" { */
-/*   #include "periphery/serial.h" */
-/* } */
+#include <stdio.h>
+#include <inttypes.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/time.h>
+#include <thread>
+#include <iostream>
+#include <fstream>
+#include <atomic>
+#include <mutex>
 
 #define BUFFER_SIZE 4096
 #define BUS_ADDR 42
@@ -23,49 +29,35 @@
 #define PJON_INCLUDE_TS true // Include only ThroughSerial
 
 
-#include <PJON.h>
-
-#include "erl_comm.hpp"
-
 #define PACKET_SZ 2
 typedef uint16_t pk_len_t;
+
+enum ErlCommandType {
+  Invalid = 0,
+  ElrCommand = 1,
+  ErlData = 2,
+  Ping = 3,
+  Info = 4,
+  Error = 5,
+  Settings = 6,
+};
+typedef enum ErlCommandType erl_cmd_e;
+
+typedef struct {
+  std::uint32_t command;
+  std::string binary;
+} erlcmd_t;
+
+typedef struct {
+  std::string key;
+  std::string value;
+} erlcmd_meta_str_t;
+
+typedef struct {
+  std::string key;
+  std::int32_t value;
+} erlcmd_meta_int_t;
+
 size_t read_port_cmd(char *buffer, pk_len_t len);
 size_t write_port_cmd(uint8_t *buffer, pk_len_t packet_len);
 
-/* // Serial Shims */
-/* extern int pjon_serial_available(serial_t *serial); */
-/* extern int16_t pjon_serial_read_byte(serial_t *serial); */
-/* extern void pjon_serial_write_byte(serial_t *serial, uint8_t byte); */
-/* extern void pjon_serial_flush(serial_t *serial); */
-/* extern void pjon_serial_delay(long ms); */
-
-
-/* /\* Serial ----------------------------------------------------------------- *\/ */
-
-
-/* #ifndef PJON_SERIAL_TYPE */
-/* #define PJON_SERIAL_TYPE serial_t * */
-/* #endif */
-
-/* #ifndef PJON_SERIAL_AVAILABLE */
-/* #define PJON_SERIAL_AVAILABLE(S) pjon_serial_available(S) */
-/* #endif */
-
-/* #ifndef PJON_SERIAL_WRITE */
-/* #define PJON_SERIAL_WRITE(S, C) pjon_serial_write_byte(S, C) */
-/* #endif */
-
-/* #ifndef PJON_SERIAL_READ */
-/* #define PJON_SERIAL_READ(S) pjon_serial_read_byte(S) */
-/* #endif */
-
-/* #ifndef PJON_SERIAL_FLUSH */
-/* #define PJON_SERIAL_FLUSH(S) pjon_serial_flush(S) */
-/* #endif */
-
-/* Timing offset in microseconds between expected and real serial
-   byte transmission: */
-
-/* #ifndef TS_FLUSH_OFFSET */
-/* #define TS_FLUSH_OFFSET        152 */
-/* #endif */

@@ -1,24 +1,21 @@
 #include "pjon_serial.h"
 
-#include <stdio.h>
-#include <inttypes.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/time.h>
-#include <thread>
-#include <iostream>
-#include <fstream>
-#include <atomic>
-#include <mutex>
+
+#include <PJON.h>
+
+#include "erl_comm.hpp"
 
 std::atomic<size_t> port_rx_len;
 char port_rx_buffer[BUFFER_SIZE];
+
+#include "goodform/variant.hpp"
+#include "goodform/form.hpp"
+#include "goodform/msgpack.hpp"
 
 void receiver_function(uint8_t *payload,
                        uint16_t length,
                        const PJON_Packet_Info &packet_info)
 {
-  // std::cerr << "BUS rx'ed packet length: " << length << std::endl;
   write_port_cmd<pk_len_t>( (char*)payload, length);
 }
 
@@ -34,6 +31,7 @@ void error_handler(uint8_t code,
   }
 }
 
+
 int main(int argc, char const *argv[]) {
   const char *device = argv[1];
   int baud_rate = std::stoi(argv[2]);
@@ -44,13 +42,6 @@ int main(int argc, char const *argv[]) {
     std::cerr.rdbuf(out.rdbuf()); //redirect std::cout to out.txt!
   #endif
 
-  // std::cerr << "Opening serial..." << std::endl;
-  // serial_t serial;
-  /* Open /dev/ttyUSB0 with baudrate 115200, and defaults of 8N1, no flow control */
-  // if (serial_open(&serial, device, baud_rate) < 0) {
-    // fprintf(stderr, "serial_open(): %s\n", serial_errmsg(&serial));
-    // exit(1);
-  // }
   std::cerr << "Setting serial..." << std::endl;
 
   PJON<ThroughSerial> bus(BUS_ADDR);
@@ -72,6 +63,8 @@ int main(int argc, char const *argv[]) {
   bus.begin();
   std::cerr << "Success, starting communication" << std::endl;
 
+  // parse_goodform();
+
   // Thread to handle reading input port commands
   std::thread([&]{
     port_rx_len = 0;
@@ -80,12 +73,10 @@ int main(int argc, char const *argv[]) {
         // std::cerr << "port port_command reading... " << std::endl;
         pk_len_t cmd_sz =
           read_port_cmd<pk_len_t>( port_rx_buffer, PJON_PACKET_MAX_LENGTH);
-        // std::cerr << "port rx'ed port_command length: " << cmd_sz << std::endl;
-        // std::cerr << "port rx'ed port_command str: " << port_rx_buffer << std::endl;
-        // std::cerr << "*" ;
         port_rx_len = cmd_sz;
         if (cmd_sz == 0) {
-          usleep(10000);
+          std::cerr << "STDIN closed, exiting. " << std::endl;
+          exit(0);
         }
       }
       usleep(100);
@@ -96,14 +87,10 @@ int main(int argc, char const *argv[]) {
     bus.update();
     bus.receive(100);
 
-    // std::cerr << "." ;
-
     if (port_rx_len.load() > 0) {
-      // std::cerr << "sending packet: " << port_rx_len.load() << std::endl;
       int resp = bus.send_packet(TX_PACKET_ADDR, port_rx_buffer, port_rx_len.load());
       port_rx_len = 0;
     }
-  // } while (!std::cout.eof());
   } while (true);
 
   std::cerr << "exiting..." << std::endl;

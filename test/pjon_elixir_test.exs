@@ -1,6 +1,6 @@
 defmodule PjonElixirTest do
   use ExUnit.Case
-  doctest PjonElixir
+  doctest PjonElixirSerial
 
   test "greets the world" do
     assert PjonElixir.hello() == :world

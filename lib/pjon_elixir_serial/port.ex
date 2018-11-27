@@ -36,7 +36,7 @@ defmodule PjonElixirSerial.Proc do
     port_bin = Path.join(:code.priv_dir(:pjon_elixir_serial), "pjon_serial")
     Logger.debug("Opening uart with binary: #{inspect port_bin}")
 
-    port_opts = [{:args, [port_bin, "#{device_name}", "#{baud_rate}"]},
+    port_opts = [{:args, ["#{device_name}", "#{baud_rate}"]},
                  :binary,
                  :exit_status,
                  packet: 2]
@@ -45,7 +45,7 @@ defmodule PjonElixirSerial.Proc do
 
     # Start Port Binary
     port = Port.open({:spawn_executable,
-                      "#{port_wrapper}"}, port_opts)
+                      "#{port_bin}"}, port_opts)
 
     unless Keyword.get(opts, :no_init, false) do
       send(port, {self(), {:command, pack!(@init_arg)}})
@@ -84,6 +84,7 @@ defmodule PjonElixirSerial.Proc do
   end
 
   def handle_cast(term, %{port: port} = state) do
+    Logger.error("port data: command: #{inspect term}")
     send(port, {self(), {:command, term |> pack!}})
 
     {:noreply, state}

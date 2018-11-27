@@ -125,13 +125,10 @@
 
 #pragma once
 
-#ifdef HAS_ETHERNETUDP
-  #ifndef UIPETHERNET_H
-    #include <Ethernet.h>
-  #endif
-  #include <interfaces/ARDUINO/TCPHelper_ARDUINO.h>
+#ifdef ARDUINO
+  #include "../../interfaces/ARDUINO/TCPHelper_ARDUINO.h"
 #else
-  #include <interfaces/LINUX/TCPHelper_POSIX.h>
+  #include "../../interfaces/LINUX/TCPHelper_POSIX.h"
   const char *F(const char *s) { return s; }
 #define Serial DummyPrint
   struct DummyPrint {

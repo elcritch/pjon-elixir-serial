@@ -11,15 +11,6 @@
 #include <atomic>
 #include <mutex>
 
-
-#include <PJON.h>
-
-#include "erl_comm.hpp"
-
-void pjon_serial_delay(long ms) {
-  // usleep(ms);
-}
-
 std::atomic<size_t> port_rx_len;
 char port_rx_buffer[BUFFER_SIZE];
 
@@ -27,7 +18,7 @@ void receiver_function(uint8_t *payload,
                        uint16_t length,
                        const PJON_Packet_Info &packet_info)
 {
-  std::cerr << "BUS rx'ed packet length: " << length << std::endl;
+  // std::cerr << "BUS rx'ed packet length: " << length << std::endl;
   write_port_cmd<pk_len_t>( (char*)payload, length);
 }
 
@@ -51,17 +42,25 @@ int main(int argc, char const *argv[]) {
   std::streambuf *coutbuf = std::cout.rdbuf(); //save old buf
   std::cerr.rdbuf(out.rdbuf()); //redirect std::cout to out.txt!
 
-  std::cerr << "Opening serial..." << std::endl;
-  serial_t serial;
+  // std::cerr << "Opening serial..." << std::endl;
+  // serial_t serial;
   /* Open /dev/ttyUSB0 with baudrate 115200, and defaults of 8N1, no flow control */
-  if (serial_open(&serial, device, baud_rate) < 0) {
-    fprintf(stderr, "serial_open(): %s\n", serial_errmsg(&serial));
-    exit(1);
-  }
+  // if (serial_open(&serial, device, baud_rate) < 0) {
+    // fprintf(stderr, "serial_open(): %s\n", serial_errmsg(&serial));
+    // exit(1);
+  // }
   std::cerr << "Setting serial..." << std::endl;
 
   PJON<ThroughSerial> bus(BUS_ADDR);
-  bus.strategy.set_serial(&serial);
+
+  // bus.strategy.set_serial(&serial);
+  int s = serialOpen(device, baud_rate);
+  if(int(s) < 0) {
+    std::cerr << "Serial open fail!" << std::endl;
+    exit(1);
+  }
+  bus.strategy.set_serial(s);
+
   // bus.strategy.set_baud_rate(baud_rate);
   bus.set_receiver(receiver_function);
   bus.set_error(error_handler);
@@ -81,22 +80,24 @@ int main(int argc, char const *argv[]) {
           read_port_cmd<pk_len_t>( port_rx_buffer, PJON_PACKET_MAX_LENGTH);
         // std::cerr << "port rx'ed port_command length: " << cmd_sz << std::endl;
         // std::cerr << "port rx'ed port_command str: " << port_rx_buffer << std::endl;
+        // std::cerr << "*" ;
         port_rx_len = cmd_sz;
         if (cmd_sz == 0) {
-          // usleep(40*1000);
+          usleep(10000);
         }
       }
+      usleep(100);
     }
   }).detach();
 
   do {
     bus.update();
-    bus.receive(10);
+    bus.receive(1000);
 
-    std::cerr << "." ;
+    // std::cerr << "." ;
 
     if (port_rx_len.load() > 0) {
-      std::cerr << "sending packet: " << port_rx_len.load() << std::endl;
+      // std::cerr << "sending packet: " << port_rx_len.load() << std::endl;
       int resp = bus.send_packet(TX_PACKET_ADDR, port_rx_buffer, port_rx_len.load());
       port_rx_len = 0;
     }

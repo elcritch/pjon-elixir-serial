@@ -49,7 +49,7 @@ See the License for the specific language governing permissions and
 limitations under the License. */
 
 #pragma once
-#include <PJON.h>
+#include "PJON.h"
 
 /* Reference to device */
 struct Device_reference {
@@ -278,7 +278,7 @@ class PJONMaster : public PJON<Strategy> {
           )
             if(rid == ids[this->last_packet_info.sender_id - 1].rid)
               if(
-                this->bus_id_equality(
+                PJONTools::bus_id_equality(
                   this->last_packet_info.sender_bus_id,
                   this->bus_id
                 )

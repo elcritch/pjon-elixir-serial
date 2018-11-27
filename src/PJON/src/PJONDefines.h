@@ -52,17 +52,23 @@ See the License for the specific language governing permissions and
 limitations under the License. */
 
 #pragma once
-#include <utils/crc/PJON_CRC8.h>
-#include <utils/crc/PJON_CRC32.h>
+#include "utils/crc/PJON_CRC8.h"
+#include "utils/crc/PJON_CRC32.h"
 
 /* Id used for broadcasting to all devices */
-#define PJON_BROADCAST        0
+#ifndef PJON_BROADCAST
+  #define PJON_BROADCAST        0
+#endif
 
 /* Master device id */
-#define PJON_MASTER_ID      254
+#ifndef PJON_MASTER_ID
+  #define PJON_MASTER_ID      254
+#endif
 
 /* Device id of still unindexed devices */
-#define PJON_NOT_ASSIGNED   255
+#ifndef PJON_NOT_ASSIGNED
+  #define PJON_NOT_ASSIGNED   255
+#endif
 
 /* Maximum devices handled by master */
 #ifndef PJON_MAX_DEVICES
@@ -223,3 +229,53 @@ static void PJON_dummy_error_handler(
   uint16_t, // data
   void *   // custom_pointer
 ) {};
+
+struct PJONTools {
+  /* Copy a bus id: */
+
+  static void copy_bus_id(uint8_t dest[], const uint8_t src[]) {
+    memcpy(dest, src, 4);
+  };
+
+  /* Check equality between two bus ids */
+
+  static bool bus_id_equality(const uint8_t *n_one, const uint8_t *n_two) {
+    for(uint8_t i = 0; i < 4; i++)
+      if(n_one[i] != n_two[i])
+        return false;
+    return true;
+  };
+
+  /* Fill a PJON_Packet_Info struct with data parsing a packet: */
+
+  static void parse_header(const uint8_t *packet, PJON_Packet_Info &packet_info) {
+    memset(&packet_info, 0, sizeof packet_info);
+    uint8_t index = 0;
+    packet_info.receiver_id = packet[index++];
+    bool extended_length = packet[index] & PJON_EXT_LEN_BIT;
+    packet_info.header = packet[index++];
+    index += extended_length + 2; // + LENGTH + HEADER CRC
+    if(packet_info.header & PJON_MODE_BIT) {
+      copy_bus_id(packet_info.receiver_bus_id, packet + index);
+      index += 4;
+      if(packet_info.header & PJON_TX_INFO_BIT) {
+        copy_bus_id(packet_info.sender_bus_id, packet + index);
+        index += 4;
+      }
+    }
+    if(packet_info.header & PJON_TX_INFO_BIT)
+      packet_info.sender_id = packet[index++];
+    #if(PJON_INCLUDE_ASYNC_ACK || PJON_INCLUDE_PACKET_ID)
+      if(((packet_info.header & PJON_ACK_MODE_BIT) &&
+          (packet_info.header & PJON_TX_INFO_BIT)
+        ) || packet_info.header & PJON_PACKET_ID_BIT
+      ) {
+        packet_info.id =
+          (packet[index] << 8) | (packet[index + 1] & 0xFF);
+        index += 2;
+      }
+    #endif
+    if(packet_info.header & PJON_PORT_BIT)
+      packet_info.port = (packet[index] << 8) | (packet[index + 1] & 0xFF);
+  };
+};

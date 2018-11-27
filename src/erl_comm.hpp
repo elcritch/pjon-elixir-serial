@@ -62,7 +62,7 @@ size_t read_port_cmd(char *buffer, PacketLenType len)
   // if we can't read complete message data, exit
   size_t bytes_read = fread(buffer, 1, packet_len, stdin);
 
-  std::cerr << "Port read: " << bytes_read << std::endl;
+  // std::cerr << "Port read: " << bytes_read << std::endl;
 
   if (bytes_read != packet_len) {
     std::cerr
@@ -85,13 +85,13 @@ size_t write_port_cmd(char *buffer, PacketLenType packet_len)
 
   PacketLenType len_out = packet_len;
 
-  std::cerr << "Writing bytes: " << len_out << std::endl;
+  // std::cerr << "Writing bytes: " << len_out << std::endl;
 
   // Pack Byte
   len_out = pack_packet_len(len_out);
 
 
-  std::cerr << "Writing: bytes swapped: " << len_out << std::endl;
+  // std::cerr << "Writing: bytes swapped: " << len_out << std::endl;
 
   size_t lens_wrote = fwrite(&len_out,
                                 sizeof(len_out),
@@ -103,7 +103,7 @@ size_t write_port_cmd(char *buffer, PacketLenType packet_len)
     exit(13);
   }
 
-  std::cerr << " writing port_command of packet: " << packet_len << " " << buffer << std::endl;
+  // std::cerr << " writing port_command of packet: " << packet_len << " " << buffer << std::endl;
 
   size_t bytes_wrote = fwrite(buffer, sizeof(char), packet_len, stdout);
 

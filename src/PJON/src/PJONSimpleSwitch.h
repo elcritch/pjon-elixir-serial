@@ -53,7 +53,7 @@ See the License for the specific language governing permissions and
 limitations under the License. */
 
 #pragma once
-#include <PJON.h>
+#include "PJON.h"
 
 template<class Strategy>
 class PJONBus : public PJON<Strategy> {
@@ -123,7 +123,7 @@ protected:
     uint8_t &start_bus
   ) {
     for(uint8_t i=start_bus; i<bus_count; i++) {
-      if(PJONBus<Strategy>::bus_id_equality(bus_id, buses[i]->bus_id)) {
+      if(PJONTools::bus_id_equality(bus_id, buses[i]->bus_id)) {
         // Check if bus is segmented and if device belongs to bus's segment
         if(
           (buses[i]->segment_count <= 1) || // Not segmented

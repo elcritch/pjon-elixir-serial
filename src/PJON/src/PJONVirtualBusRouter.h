@@ -54,7 +54,7 @@ See the License for the specific language governing permissions and
 limitations under the License. */
 
 #pragma once
-#include <PJONDynamicRouter.h>
+#include "PJONDynamicRouter.h"
 
 #ifndef PJON_VIRTUALBUS_MAX_DEVICES
   #define PJON_VIRTUALBUS_MAX_DEVICES 255
@@ -111,14 +111,14 @@ protected:
 
       bool disable_ack = true;
       RouterClass::send_packet(payload, length, receiver_bus, sender_bus, disable_ack, info);
-      #ifdef DEBUG_PRINT
+      #ifdef DEBUG_PRINT_PACKETS
       Serial.print(F("FORWARD NOACK ")); Serial.print(info.receiver_id); Serial.print(F(" to bus "));
       Serial.println(receiver_bus);
       #endif
     } 
     else {
       RouterClass::send_packet(payload, length, receiver_bus, sender_bus, ack_sent, packet_info);
-      #ifdef DEBUG_PRINT
+      #ifdef DEBUG_PRINT_PACKETS
       Serial.print(F("FORWARD ")); Serial.print(packet_info.receiver_id); Serial.print(F(" to bus "));
       Serial.println(receiver_bus);
       #endif

@@ -63,8 +63,6 @@ int main(int argc, char const *argv[]) {
   bus.begin();
   std::cerr << "Success, starting communication" << std::endl;
 
-  // parse_goodform();
-
   // Thread to handle reading input port commands
   std::thread([&]{
     port_rx_len = 0;

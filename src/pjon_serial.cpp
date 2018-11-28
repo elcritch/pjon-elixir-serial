@@ -83,9 +83,8 @@ int main(int argc, char const *argv[]) {
 
   do {
     bus.update();
-    bus.receive(10);
+    bus.receive(PJON_RX_WAIT_TIME);
 
-    bus.update();
     if (port_rx_len.load() > 0) {
       int rx_len = port_rx_len.load();
       #ifdef PJON_SEND_BLOCKING

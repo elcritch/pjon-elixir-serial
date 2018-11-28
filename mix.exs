@@ -17,11 +17,11 @@ defmodule PjonElixirSerial.MixProject do
         "PACKET_SIZE" => "#{pjon_option(:packet_size, 256)}",
         "PJON_INCLUDE_PACKET_ID" => "#{pjon_option(:include_packet_id, true)}",
         "PJON_MAX_RECENT_PACKET_IDS" => "#{pjon_option(:max_recent_ids, 10)}",
-        "TS_RESPONSE_TIME_OUT" => "#{pjon_option(:response_timeout, 4010)}",
+        "TS_RESPONSE_TIME_OUT" => "#{pjon_option(:response_timeout, 10100)}",
         "BUS_ADDR" => "#{pjon_option(:bus_addr, 42)}",
         "TX_PACKET_ADDR" => "#{pjon_option(:tx_packet_addr, 47)}",
         "PJON_SEND_BLOCKING" => "#{pjon_option(:blocking_send, true)}",
-        
+        "PJON_RX_WAIT_TIME" => "#{pjon_option(:rx_wait_time, 100)}",
       },
       deps: deps()
     ]

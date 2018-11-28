@@ -14,7 +14,7 @@ defmodule PjonElixirSerial.MixProject do
 
   def application do
     [
-      mod: {PjonElixirSerial.Application, []},
+      mod: {PjonElixirSerial, []},
       extra_applications: [:logger]
     ]
   end

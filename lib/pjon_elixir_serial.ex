@@ -1,4 +1,4 @@
-defmodule PjonElixirSerial.Application do
+defmodule PjonElixirSerial do
   require Logger
   use Application
 
@@ -9,10 +9,19 @@ defmodule PjonElixirSerial.Application do
   def start(_type, _args) do
     children = [
       {Registry, keys: :duplicate, name: PjonElixirSerial.PjonRegistry},
-      {PjonElixirSerial.Router, name: PjonElixirSerial.Router},
+      {PjonElixirSerial.DeviceManager, name: PjonElixirSerial.DeviceManager},
       {PjonElixirSerial.Port, name: PjonElixirSerial.Port},
     ]
 
     Supervisor.start_link(children, strategy: :rest_for_one)
+  end
+
+  def whereis(name) when is_binary(name) do
+    # TODO: support multiple instances... 
+    Process.whereis(PjonElixirSerial.DeviceManager)
+  end
+
+  def write(pid, data) do
+    GenServer.cast(pid, {:command, data})
   end
 end

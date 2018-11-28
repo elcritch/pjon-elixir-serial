@@ -1,40 +1,71 @@
-defmodule PjonElixirSerial.Router do
+
+defmodule PjonElixirSerial.Parser do
   require Logger
-  use GenServer
+  use Task
 
-  alias PjonElixirSerial.PjonRegistry
+  @seperator Application.get_env(
+    :pjon_elixir_serial,
+    :parser_separator,
+    [<<"\n", 0x6>>, <<0x6>>, "\n"]
+  )
 
+  @timeout Application.get_env(:pjon_elixir_serial, :parser_timeout, 1_000)
+  @max_buffer Application.get_env(:pjon_elixir_serial, :parser_max_buffer, 8192)
 
-  def register(), do: register(self())
+  def stream_parser(args \\ []) do
+    Logger.error("starting parser: #{inspect self()}")
+    Process.register(self(), PjonElixirSerial.Parser)
 
-  def register(pid, type \\ :all) do
-    {:ok, _} = Registry.register(PjonRegistry, :listeners, {:on, type, pid})
+    Stream.repeatedly(&receive_data_packet/0)
+    |> Stream.transform("\n", &framer_func/2)
+    |> Stream.flat_map(&(&1))
+    |> Stream.each(fn x -> Logger.error("parser result: #{inspect x}") end)
+    |> Stream.each(&dispatch_type/1)
+    |> Stream.run()
   end
 
-  @doc """
-  """
-  def start_link(opts \\ []) do
-    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+  def frame(line, kind \\ :data) do
+    {kind, line}
   end
 
-  def init(_opts) do
-    Task.start_link(PjonElixirSerial.Parser, :stream_parser, [])
-    {:ok, %{}}
+  def framer_func(msg, acc) do 
+    # Logger.error("framer_func got: #{inspect msg}, acc: #{inspect acc}")
+    case msg do
+      {:packet, data} ->
+        Logger.error("framer_func got: #{inspect msg}, acc: #{inspect acc}")
+        items = String.split(acc <> data, @seperator, trim: false);
+        {last_item, lines} = List.pop_at(items, -1, "");
+
+        frames = lines |> Enum.map(&frame/1)
+        if byte_size(last_item) < @max_buffer do
+          {[frames], last_item} # the last line is always the last item
+        else
+          {[frames, [last_item |> frame(:partial) ]], ""} # overflow, push out packet
+        end
+      :timeout ->
+        if acc == "" do
+          {[[]], ""}
+        else
+          {[[acc |> frame(:partial)]], ""}
+        end
+    end
   end
 
-  def handle_info({:command, _data} = msg , %{} = state) do
-    GenServer.cast(PjonElixirSerial.Port, msg)
-    {:noreply, state}
+  def dispatch_type({_type, _term} = msg) do
+    # Logger.error("parser: dispatch: #{inspect(msg)}")
+    GenServer.cast(PjonElixirSerial.DeviceManager, {:route, msg})
   end
 
-  def handle_cast({:route, {type, term} = _msg}) do
-    # Dispatch
-    Registry.dispatch(PjonRegistry, :listeners, fn entries ->
-      for {_pid, item} <- entries,
-      {:on, filter_type, client} = item,
-      type == filter_type do
-        send(client, {:data, term})
-      end
-    end)
+  def receive_data_packet() do
+    receive do
+      {:packet, bindata} = msg ->
+        # Logger.error("parser: receive_data_packet: #{inspect(msg)}")
+        {:packet, bindata}
+    after
+      @timeout ->
+        # Logger.error("receive_data_packet: timeout")
+        :timeout
+    end
   end
+
 end

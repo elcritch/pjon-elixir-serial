@@ -7,7 +7,7 @@ defmodule PjonElixirSerial.MixProject do
       version: "0.1.0",
       elixir: "~> 1.7",
       start_permanent: Mix.env() == :prod,
-      compilers: [:elixir_make] ++ Mix.compilers,
+      compilers: [:elixir_make] ++ Mix.compilers(),
       deps: deps()
     ]
   end
@@ -23,9 +23,15 @@ defmodule PjonElixirSerial.MixProject do
     [
       # ...
       files: [
-        "lib", "LICENSE", "mix.exs", "README.md", # These are the default files
+        # These are the default files
+        "lib",
+        "LICENSE",
+        "mix.exs",
+        "README.md",
         "src/",
-        "Makefile"], # You will need to add something like this.
+        # You will need to add something like this.
+        "Makefile"
+      ]
       # ...
     ]
   end

@@ -1,21 +1,20 @@
-defmodule PjonElixirSerial.Proc do
+defmodule PjonElixirSerial.Port do
   require Logger
 
   @moduledoc """
   Documentation for PjonElixirSerial.
   """
-  alias PjonElixirSerial.PjonRegistry
 
   use GenServer
 
   def pack!(data) do
-    data
     # MsgPax.pack!(data)
+    data
   end
 
   def unpack!(data) do
-    data
     # MsgPax.unpack!(data)
+    data
   end
 
   @doc """
@@ -27,25 +26,19 @@ defmodule PjonElixirSerial.Proc do
   @init_arg Application.get_env(:pjon_elixir_serial, :init_arg, "\n")
 
   def init(opts) do
-    baud_rate = Application.get_env(:pjon_elixir_serial, :baud_rate, 115200)
+    baud_rate = Application.get_env(:pjon_elixir_serial, :baud_rate, 115_200)
     device_name = Application.get_env(:pjon_elixir_serial, :device, "/dev/ttyUSB0")
 
-    port_args = [:args, ["#{device_name}", "#{baud_rate}"]]
+    port_args = ["#{device_name}", "#{baud_rate}"]
 
-    port_wrapper = Path.join(:code.priv_dir(:pjon_elixir_serial), "wrapper.sh")
     port_bin = Path.join(:code.priv_dir(:pjon_elixir_serial), "pjon_serial")
-    Logger.debug("Opening uart with binary: #{inspect port_bin}")
+    Logger.debug("Opening uart with binary: #{inspect(port_bin)}")
 
-    port_opts = [{:args, ["#{device_name}", "#{baud_rate}"]},
-                 :binary,
-                 :exit_status,
-                 packet: 2]
-
-    Logger.info("Opening uart with options: #{inspect port_opts}")
+    port_opts = [{:args, port_args}, :binary, :exit_status, packet: 2]
 
     # Start Port Binary
-    port = Port.open({:spawn_executable,
-                      "#{port_bin}"}, port_opts)
+    Logger.info("Opening uart with options: #{inspect(port_opts)}")
+    port = Port.open({:spawn_executable, "#{port_bin}"}, port_opts)
 
     unless Keyword.get(opts, :no_init, false) do
       send(port, {self(), {:command, pack!(@init_arg)}})
@@ -54,59 +47,37 @@ defmodule PjonElixirSerial.Proc do
     {:ok, %{port: port}}
   end
 
-  def handle_info({port, {:exit_status, 0}}, %{port: port} = state) do
+  def handle_info({_port, {:exit_status, 0}}, %{} = state) do
     {:stop, :normal, state}
   end
 
-  def handle_info({port, {:exit_status, _}}, %{port: port} = state) do
+  def handle_info({_port, {:exit_status, _}}, %{} = state) do
     {:stop, :port_terminated, state}
   end
 
-  def handle_info({port, {:data, rawdata} = msg}, %{port: port} = state) do
-    data = rawdata |> unpack!()
+  def handle_info({_port, {:data, rawdata} = msg}, state) do
+    term = rawdata |> unpack!()
 
-    Logger.error("port rx data: #{inspect msg}")
-    # Dispatch
-    Registry.dispatch(PjonRegistry, :listeners, fn entries ->
-      for {_pid, item} <- entries,
-          {:on, :data, topid} = item do
-        send(topid, {:serial, :data, data})
-      end
-    end)
-
+    parser = Process.whereis(PjonElixirSerial.Parser)
+    Logger.debug("port sent packet data: #{inspect(msg)}")
+    send(parser, {:packet, term})
     {:noreply, state}
   end
 
-  def register(), do: register(self())
+  def handle_info({:data, rawdata} = msg, state) do
+    term = rawdata |> unpack!()
 
-  def register(pid) do
-    {:ok, _} = Registry.register(PjonRegistry, :listeners, {:on, :data, pid})
+    parser = Process.whereis(PjonElixirSerial.Parser)
+    Logger.debug(" sent packet data: #{inspect(msg)}")
+    send(parser, {:packet, term})
+    {:noreply, state}
   end
 
-  def handle_cast(term, %{port: port} = state) do
-    Logger.error("port data: command: #{inspect term}")
+  def handle_cast({:command, term}, %{port: port} = state) do
+    Logger.debug("port data: command cast: #{inspect(term)}")
     send(port, {self(), {:command, term |> pack!}})
 
     {:noreply, state}
   end
 
-  def handle_call(term, _reply_to, %{port: port} = state) do
-    send(port, {self(), {:command, term |> pack!}})
-
-    res =
-      receive do
-        {^port, {:data, rawdata} = msg} ->
-          Logger.error("port data: command: #{inspect msg}")
-          unpack!(rawdata)
-
-        # catch exit msg and resend it
-        {^port, {:exit_status, _}} = exit_msg ->
-          self()
-          |> send(exit_msg)
-
-          {:error, :port_terminated}
-      end
-
-    {:reply, res, state}
-  end
 end

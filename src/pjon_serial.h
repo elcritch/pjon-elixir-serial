@@ -24,7 +24,7 @@
 // Max number of old packet ids stored to avoid duplication
 #define PJON_INCLUDE_PACKET_ID true
 #define PJON_MAX_RECENT_PACKET_IDS 10
-#define PJON_PACKET_MAX_LENGTH 256
+#define PJON_PACKET_MAX_LENGTH 512
 
 #define PJON_INCLUDE_TS true // Include only ThroughSerial
 

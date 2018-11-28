@@ -22,6 +22,7 @@ defmodule PjonElixirSerial do
   end
 
   def write(pid, data) do
-    GenServer.call(pid, {:command, data})
+    # TODO: change to blocking call waiting for "ok" state? 
+    GenServer.cast(pid, {:command, data})
   end
 end

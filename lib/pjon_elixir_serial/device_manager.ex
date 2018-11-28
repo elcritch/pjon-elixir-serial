@@ -32,12 +32,6 @@ defmodule PjonElixirSerial.DeviceManager do
     {:noreply, state}
   end
 
-  def handle_call({:command, _data} = msg , _from, %{} = state) do
-    # TODO: change this to a blocking call, but need application specific "READY" code
-    GenServer.cast(PjonElixirSerial.Port, msg)
-    {:reply, :ok, state}
-  end
-
   def handle_cast({:route, {type, term} = msg}, state) do
     # Dispatch
     Logger.debug("router: dispatch: #{inspect(msg)}")

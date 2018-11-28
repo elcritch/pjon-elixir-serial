@@ -32,9 +32,9 @@ defmodule PjonElixirSerial.DeviceManager do
     {:noreply, state}
   end
 
-  def handle_cast({:route, {type, term} = _msg}, state) do
+  def handle_cast({:route, {type, term} = msg}, state) do
     # Dispatch
-    Logger.error("router: dispatch: #{inspect(_msg)}")
+    Logger.debug("router: dispatch: #{inspect(msg)}")
     Registry.dispatch(PjonRegistry, :listeners, fn entries ->
       for {_pid, item} <- entries,
       {:on, filter_type, client} = item,

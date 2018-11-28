@@ -12,7 +12,7 @@ defmodule PjonElixirSerial.Parser do
   @timeout Application.get_env(:pjon_elixir_serial, :parser_timeout, 1_000)
   @max_buffer Application.get_env(:pjon_elixir_serial, :parser_max_buffer, 8192)
 
-  def stream_parser(args \\ []) do
+  def stream_parser(_args \\ []) do
     Logger.error("starting parser: #{inspect self()}")
     Process.register(self(), PjonElixirSerial.Parser)
 
@@ -32,7 +32,7 @@ defmodule PjonElixirSerial.Parser do
     # Logger.error("framer_func got: #{inspect msg}, acc: #{inspect acc}")
     case msg do
       {:packet, data} ->
-        Logger.error("framer_func got: #{inspect msg}, acc: #{inspect acc}")
+        # Logger.debug("framer_func got: #{inspect msg}, acc: #{inspect acc}")
         items = String.split(acc <> data, @seperator, trim: false);
         {last_item, lines} = List.pop_at(items, -1, "");
 
@@ -59,7 +59,7 @@ defmodule PjonElixirSerial.Parser do
   def receive_data_packet() do
     receive do
       {:packet, bindata} = msg ->
-        # Logger.error("parser: receive_data_packet: #{inspect(msg)}")
+        Logger.debug("parser: receive_data_packet: #{inspect(msg)}")
         {:packet, bindata}
     after
       @timeout ->

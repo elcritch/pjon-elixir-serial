@@ -4,8 +4,8 @@ defmodule PjonElixirSerial.MixProject do
   def project do
     [
       app: :pjon_elixir_serial,
-      version: "0.1.1",
-      elixir: "~> 1.7",
+      version: "0.1.2",
+      elixir: "~> 1.5",
       start_permanent: Mix.env() == :prod,
       compilers: [:elixir_make] ++ Mix.compilers(),
       deps: deps()

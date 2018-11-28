@@ -22,6 +22,6 @@ defmodule PjonElixirSerial do
   end
 
   def write(pid, data) do
-    GenServer.cast(pid, {:command, data})
+    GenServer.call(pid, {:command, data})
   end
 end

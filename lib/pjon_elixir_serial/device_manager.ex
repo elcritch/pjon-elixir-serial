@@ -8,7 +8,7 @@ defmodule PjonElixirSerial.DeviceManager do
   def register(), do: register(self())
 
   def register(pid, type \\ :all) do
-    {:ok, _} = Registry.register(PjonRegistry, :listeners, {:on, type, pid})
+   {:ok, _} = Registry.register(PjonRegistry, :listeners, {:on, type, pid})
   end
 
   @doc """
@@ -38,8 +38,9 @@ defmodule PjonElixirSerial.DeviceManager do
     Registry.dispatch(PjonRegistry, :listeners, fn entries ->
       for {_pid, item} <- entries,
       {:on, filter_type, client} = item,
-      type == filter_type do
-        send(client, {:data, term})
+      type == filter_type or filter_type == :any do
+        Logger.debug("router: dispatch to: #{inspect(client)}")
+        send(client, {:pjon, {:data, term}})
       end
     end)
     {:noreply, state}

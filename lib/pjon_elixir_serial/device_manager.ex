@@ -32,7 +32,7 @@ defmodule PjonElixirSerial.DeviceManager do
     {:noreply, state}
   end
 
-  def handle_call({:command, _data} = msg , %{} = state) do
+  def handle_call({:command, _data} = msg , _from, %{} = state) do
     # TODO: change this to a blocking call, but need application specific "READY" code
     GenServer.cast(PjonElixirSerial.Port, msg)
     {:noreply, state}

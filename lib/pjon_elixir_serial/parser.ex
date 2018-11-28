@@ -13,13 +13,13 @@ defmodule PjonElixirSerial.Parser do
   @max_buffer Application.get_env(:pjon_elixir_serial, :parser_max_buffer, 8192)
 
   def stream_parser(_args \\ []) do
-    Logger.error("starting parser: #{inspect self()}")
+    Logger.info("Starting parser: #{inspect self()}")
     Process.register(self(), PjonElixirSerial.Parser)
 
     Stream.repeatedly(&receive_data_packet/0)
     |> Stream.transform("\n", &framer_func/2)
     |> Stream.flat_map(&(&1))
-    |> Stream.each(fn x -> Logger.error("parser result: #{inspect x}") end)
+    |> Stream.each(fn x -> Logger.debug("parser result: #{inspect x}") end)
     |> Stream.each(&dispatch_type/1)
     |> Stream.run()
   end

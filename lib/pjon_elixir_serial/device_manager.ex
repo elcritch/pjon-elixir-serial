@@ -37,8 +37,8 @@ defmodule PjonElixirSerial.DeviceManager do
     Logger.debug("router: dispatch: #{inspect(msg)}")
     Registry.dispatch(PjonRegistry, :listeners, fn entries ->
       for {_pid, item} <- entries,
-      {:on, filter_type, client} = item,
-      type == filter_type or filter_type == :any do
+          {:on, filter_type, client} = item,
+          type == filter_type || filter_type == :any do
         Logger.debug("router: dispatch to: #{inspect(client)}")
         send(client, {:pjon, {:data, term}})
       end

@@ -19,7 +19,7 @@
 #define TX_PACKET_ADDR 47
 
 /* Maximum timeframe between transmission and synchronous acknowledgement. */
-#define TS_RESPONSE_TIME_OUT 101000
+#define TS_RESPONSE_TIME_OUT 10100
 
 // Max number of old packet ids stored to avoid duplication
 #define PJON_INCLUDE_PACKET_ID true

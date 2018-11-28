@@ -7,7 +7,7 @@ defmodule PjonElixirSerial.DeviceManager do
 
   def register(), do: register(self())
 
-  def register(pid, type \\ :all) do
+  def register(pid, type \\ :any) do
    {:ok, _} = Registry.register(PjonRegistry, :listeners, {:on, type, pid})
   end
 

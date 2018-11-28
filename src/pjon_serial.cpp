@@ -86,7 +86,13 @@ int main(int argc, char const *argv[]) {
     bus.receive(100);
 
     if (port_rx_len.load() > 0) {
-      int resp = bus.send_packet(TX_PACKET_ADDR, port_rx_buffer, port_rx_len.load());
+      int rx_len = port_rx_len.load();
+      #ifdef PJON_SEND_BLOCKING
+        int resp = bus.send_packet_blocking(TX_PACKET_ADDR, port_rx_buffer, rx_len );
+      #else
+        int resp = bus.send_packet(TX_PACKET_ADDR, port_rx_buffer, rx_len);
+      #endif
+
       port_rx_len = 0;
     }
   } while (true);

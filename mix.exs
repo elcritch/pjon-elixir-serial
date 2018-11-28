@@ -20,6 +20,8 @@ defmodule PjonElixirSerial.MixProject do
         "TS_RESPONSE_TIME_OUT" => "#{pjon_option(:response_timeout, 1010)}",
         "BUS_ADDR" => "#{pjon_option(:bus_addr, 42)}",
         "TX_PACKET_ADDR" => "#{pjon_option(:tx_packet_addr, 47)}",
+        "PJON_SEND_BLOCKING" => "#{pjon_option(:blocking_send, true)}",
+        
       },
       deps: deps()
     ]

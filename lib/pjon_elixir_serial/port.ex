@@ -82,4 +82,11 @@ defmodule PjonElixirSerial.Port do
     send(parser, {:packet, term})
     {:noreply, state}
   end
+
+  def handle_cast({:command, term}, %{port: port} = state) do
+    Logger.debug("port data: command cast: #{inspect(term)}")
+    send(port, {self(), {:command, term |> pack!}})
+
+    {:noreply, state}
+  end
 end

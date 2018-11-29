@@ -1,5 +1,5 @@
 defmodule PjonElixirSerial.Port do
-  # require Logger
+  require Logger
 
   @moduledoc """
   Documentation for PjonElixirSerial.
@@ -32,12 +32,12 @@ defmodule PjonElixirSerial.Port do
     port_args = ["#{device_name}", "#{baud_rate}"]
 
     port_bin = Path.join(:code.priv_dir(:pjon_elixir_serial), "pjon_serial")
-    # Logger.debug("Opening uart with binary: #{inspect(port_bin)}")
+    Logger.debug("Opening uart with binary: #{inspect(port_bin)}")
 
     port_opts = [{:args, port_args}, :binary, :exit_status, packet: 2]
 
     # Start Port Binary
-    # Logger.info("Opening uart with options: #{inspect(port_opts)}")
+    Logger.info("Opening uart with options: #{inspect(port_opts)}")
     port = Port.open({:spawn_executable, "#{port_bin}"}, port_opts)
 
     unless Keyword.get(opts, :no_init, false) do
@@ -59,7 +59,7 @@ defmodule PjonElixirSerial.Port do
     term = rawdata |> unpack!()
 
     parser = Process.whereis(PjonElixirSerial.Parser)
-    # Logger.debug("port sent packet data: #{inspect(msg)}")
+    Logger.debug("port sent packet data: #{inspect(msg)}")
     send(parser, {:packet, term})
     {:noreply, state}
   end
@@ -68,13 +68,13 @@ defmodule PjonElixirSerial.Port do
     term = rawdata |> unpack!()
 
     parser = Process.whereis(PjonElixirSerial.Parser)
-    # Logger.debug(" sent packet data: #{inspect(msg)}")
+    Logger.debug(" sent packet data: #{inspect(msg)}")
     send(parser, {:packet, term})
     {:noreply, state}
   end
 
   def handle_cast({:command, term}, %{port: port} = state) do
-    # Logger.debug("port data: command cast: #{inspect(term)}")
+    Logger.debug("port data: command cast: #{inspect(term)}")
     send(port, {self(), {:command, term |> pack!}})
 
     {:noreply, state}

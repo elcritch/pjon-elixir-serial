@@ -46,7 +46,8 @@ int main(int argc, char const *argv[]) {
     std::cerr.rdbuf(out.rdbuf()); //redirect std::cout to out.txt!
   #endif
 
-  std::cerr << "Setting serial..." << std::endl;
+  std::cerr << "Setting serial... file: " << device << std::endl;
+  std::cerr << "Setting serial... baud: " << baud_rate << std::endl;
 
   PJON<ThroughSerial> bus(BUS_ADDR);
 

@@ -20,31 +20,40 @@ defmodule PjonElixirSerial.Port do
   @doc """
   """
   def start_link(opts \\ []) do
+    Logger.info("Starting Pjon PORT")
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
   @init_arg Application.get_env(:pjon_elixir_serial, :init_arg, "\n")
 
   def init(opts) do
+    Logger.info("Starting Pjon PORT")
     baud_rate = Application.get_env(:pjon_elixir_serial, :baud_rate, 115_200)
     device_name = Application.get_env(:pjon_elixir_serial, :device, "/dev/ttyUSB0")
 
     port_args = ["#{device_name}", "#{baud_rate}"]
 
     port_bin = Path.join(:code.priv_dir(:pjon_elixir_serial), "pjon_serial")
-    Logger.debug("Opening uart with binary: #{inspect(port_bin)}")
+    Logger.info("Opening uart with binary: #{inspect(port_bin)}")
 
     port_opts = [{:args, port_args}, :binary, :exit_status, packet: 2]
 
+    GenServer.cast(self(), :start)
+    {:ok, %{port: nil, opts: port_opts, bin: port_bin}}
+  end
+
+  def handle_cast(:start, %{port: port, opts: port_opts, bin: port_bin} = state) do
     # Start Port Binary
-    Logger.info("Opening uart with options: #{inspect(port_opts)}")
+    Logger.info("Opening uart with options: #{inspect(port_opts)} -- bin: #{inspect(port_bin)}")
     port = Port.open({:spawn_executable, "#{port_bin}"}, port_opts)
 
-    unless Keyword.get(opts, :no_init, false) do
+    no_init? = Application.get_env(:pjon_elixir_serial, :no_init, false)
+
+    unless no_init? do
       send(port, {self(), {:command, pack!(@init_arg)}})
     end
 
-    {:ok, %{port: port}}
+    {:noreply, state}
   end
 
   def handle_info({_port, {:exit_status, 0}}, %{} = state) do

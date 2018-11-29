@@ -34,7 +34,6 @@ defmodule PjonElixirSerial.Port do
     port_args = ["#{device_name}", "#{baud_rate}"]
 
     port_bin = Path.join(:code.priv_dir(:pjon_elixir_serial), "pjon_serial")
-    Logger.info("Opening uart with binary: #{inspect(port_bin)}")
 
     port_opts = [{:args, port_args}, :binary, :exit_status, packet: 2]
 
@@ -42,7 +41,7 @@ defmodule PjonElixirSerial.Port do
     {:ok, %{port: nil, opts: port_opts, bin: port_bin}}
   end
 
-  def handle_cast(:start, %{port: port, opts: port_opts, bin: port_bin} = state) do
+  def handle_cast(:start, %{opts: port_opts, bin: port_bin} = state) do
     # Start Port Binary
     Logger.info("Opening uart with options: #{inspect(port_opts)} -- bin: #{inspect(port_bin)}")
     port = Port.open({:spawn_executable, "#{port_bin}"}, port_opts)
@@ -53,14 +52,16 @@ defmodule PjonElixirSerial.Port do
       send(port, {self(), {:command, pack!(@init_arg)}})
     end
 
-    {:noreply, state}
+    {:noreply, %{ state | port: port }}
   end
 
   def handle_info({_port, {:exit_status, 0}}, %{} = state) do
+    Logger.debug("PJON Serial port: closing: #{inspect(self())}")
     {:stop, :normal, state}
   end
 
-  def handle_info({_port, {:exit_status, _}}, %{} = state) do
+  def handle_info({_port, {:exit_status, _} = error}, %{} = state) do
+    Logger.debug("PJON Serial port: closing: error: #{inspect(self())} -- #{inspect error}")
     {:stop, :port_terminated, state}
   end
 
@@ -81,12 +82,4 @@ defmodule PjonElixirSerial.Port do
     send(parser, {:packet, term})
     {:noreply, state}
   end
-
-  def handle_cast({:command, term}, %{port: port} = state) do
-    Logger.debug("port data: command cast: #{inspect(term)}")
-    send(port, {self(), {:command, term |> pack!}})
-
-    {:noreply, state}
-  end
-
 end

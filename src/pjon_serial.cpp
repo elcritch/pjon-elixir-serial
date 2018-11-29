@@ -36,7 +36,7 @@ int main(int argc, char const *argv[]) {
   const char *device = argv[1];
   int baud_rate = std::stoi(argv[2]);
 
-  #ifdef DEBUG // useful for debugging
+  #ifdef DEBUG_MODE // useful for debugging
     std::ofstream out("/tmp/pjon_serial.txt");
     std::streambuf *coutbuf = std::cout.rdbuf(); //save old buf
     std::cerr.rdbuf(out.rdbuf()); //redirect std::cout to out.txt!

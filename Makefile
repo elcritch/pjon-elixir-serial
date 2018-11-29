@@ -13,7 +13,7 @@ all:
 		-DPJON_SEND_BLOCKING=$(PJON_SEND_BLOCKING) \
 		-DPJON_RX_WAIT_TIME=$(PJON_RX_WAIT_TIME) \
 		-DTS_MAX_ATTEMPTS=$(TS_MAX_ATTEMPTS) \
-		-DDEBUG \
+		-DDEBUG_MODE=$(DEBUG_MODE) \
 		-I. -Isrc/PJON/src -Isrc/periphery -Isrc/goodform/include/ -std=gnu++11 \
 		src/pjon_serial.cpp -o priv/pjon_serial -lpthread -lm 
 

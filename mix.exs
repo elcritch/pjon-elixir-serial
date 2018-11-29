@@ -24,6 +24,7 @@ defmodule PjonElixirSerial.MixProject do
         "PJON_RX_WAIT_TIME" => "#{pjon_option(:rx_wait_time, 100)}",
         "TS_MAX_ATTEMPTS" => "#{pjon_option(:ts_max_attempts, 10)}",
         "DEBUG_MODE" => "#{pjon_option(:debug_mode, false)}",
+        "DEBUG_LOGFILE" => "#{pjon_option(:debug_mode_logfile, "/tmp/pjon_serial.txt")}",
       },
       deps: deps()
     ]

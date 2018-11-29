@@ -22,6 +22,7 @@ defmodule PjonElixirSerial.MixProject do
         "TX_PACKET_ADDR" => "#{pjon_option(:tx_packet_addr, 47)}",
         "PJON_SEND_BLOCKING" => "#{pjon_option(:blocking_send, true)}",
         "PJON_RX_WAIT_TIME" => "#{pjon_option(:rx_wait_time, 100)}",
+        "TS_MAX_ATTEMPTS" => "#{pjon_option(:ts_max_attempts, 5)}",
       },
       deps: deps()
     ]

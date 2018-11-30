@@ -25,38 +25,57 @@
 #define PACKET_SZ 2
 typedef uint16_t pk_len_t;
 
-enum ErlCommandType {
+enum ErlCommsType {
   Invalid = 0,
-  ElrCommand = 1,
-  ErlData = 2,
-  Ping = 3,
-  Info = 4,
-  Error = 5,
+  SendPjonPacket = 1,
+  ReceivedPjonPacket = 2,
+  PjonPacketError = 3,
+  Ping = 4,
+  Info = 5,
   Settings = 6,
 };
-typedef enum ErlCommandType erl_cmd_e;
 
-MSGPACK_ADD_ENUM(ErlCommandType);
+MSGPACK_ADD_ENUM(ErlCommsType);
 
-struct Packet_Info_Wrapper : PJON_Packet_Info {
-  Packet_Info_Wrapper(const PJON_Packet_Info &pi) : PJON_Packet_Info(pi)
+typedef std::vector<unsigned char> message_t;
+typedef std::vector<char> message_str_t;
+
+struct ErlCommsPacketInfo : PJON_Packet_Info {
+  ErlCommsPacketInfo(const PJON_Packet_Info &pi) : PJON_Packet_Info(pi)
   {}
+  MSGPACK_DEFINE(header, id, receiver_id, receiver_bus_id, sender_id, sender_bus_id, port);
 };
 
-typedef struct {
-  std::uint32_t command;
-  std::string binary;
-} erlcmd_t;
+struct ErlCommsPacketTx {
+  std::uint32_t addr;
+  message_t message;
+  MSGPACK_DEFINE(addr, message);
+};
 
-typedef struct {
-  std::string key;
-  std::string value;
-} erlcmd_meta_str_t;
+struct ErlCommsPacketRx {
+  message_t message;
+  ErlCommsPacketInfo packet_info;
+  ErlCommsPacketRx(message_t msg, ErlCommsPacketInfo pi) : message(msg), packet_info(pi) {}
+  MSGPACK_DEFINE(message, packet_info);
+};
 
-typedef struct {
-  std::string key;
-  std::int32_t value;
-} erlcmd_meta_int_t;
+struct ErlCommsPacketError {
+  uint8_t error_code;
+  message_str_t message;
+  ErlCommsPacketError(uint8_t ec, message_str_t msg) : error_code(ec), message(msg)  {}
+  MSGPACK_DEFINE(error_code, message);
+};
+
+struct ErlCommsInfo {
+  message_t message;
+  ErlCommsInfo(message_t msg) : message(msg) {}
+  MSGPACK_DEFINE(message);
+};
+
+template <typename ErlCommsPacket>
+std::tuple<ErlCommsType, ErlCommsPacket> erl_comms_packet(ErlCommsType tp, ErlCommsPacket pkt) {
+  return std::tuple<ErlCommsType, ErlCommsPacket>(tp, pkt);
+}
 
 size_t read_port_cmd(char *buffer, pk_len_t len);
 size_t write_port_cmd(uint8_t *buffer, pk_len_t packet_len);

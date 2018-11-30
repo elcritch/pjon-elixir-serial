@@ -8,48 +8,80 @@
 std::atomic<size_t> port_rx_len;
 char port_rx_buffer[BUFFER_SIZE];
 
-// #include "goodform/variant.hpp"
-// #include "goodform/form.hpp"
-// #include "goodform/msgpack.hpp"
+PJON<ThroughSerial> bus(BUS_ADDR);
 
 void receiver_function(uint8_t *payload,
                        uint16_t length,
                        const PJON_Packet_Info &packet_info)
 {
-  write_port_cmd<pk_len_t>( (char*)payload, length);
+  std::vector<unsigned char> message(payload, payload + length );
+
+  ErlCommsPacketRx cmd_body(message, packet_info);
+
+  auto comms_pkt = erl_comms_packet(ReceivedPjonPacket, cmd_body);
+
+  // serialize the object into the buffer.
+  std::stringstream buffer;
+  msgpack::pack(buffer, comms_pkt);
+
+  // deserialize the buffer into msgpack::object instance.
+  buffer.seekg(0);
+  std::string packed(buffer.str());
+
+  write_port_cmd<pk_len_t>( (char*)packed.c_str(), packed.length());
 }
 
 void error_handler(uint8_t code,
                    uint16_t data,
                    void *custom_pointer)
 {
-  if (code == PJON_CONNECTION_LOST) {
-    std::cerr << "error: pjon connection lost" << std::endl;
+  std::stringstream err_msg_ss;
+
+  if(code == PJON_CONNECTION_LOST) {
+    err_msg_ss << "Connection with device ID "
+               << bus.packets[data].content[0]
+               << " is lost.";
   }
-  else {
-    std::cerr << "error: pjon packet failure: code: " << code << std::endl;
+  if(code == PJON_PACKETS_BUFFER_FULL) {
+    err_msg_ss << "Packet buffer is full, has now a length of "
+               << data
+               << "Possible wrong bus configuration!"
+               << "higher PJON_MAX_PACKETS if necessary.";
   }
+  if(code == PJON_CONTENT_TOO_LONG) {
+    err_msg_ss << "Content is too long, length: "
+               << data;
+  }
+
+  // Well, if it works -- better way to convert to string<uint8_t> ?
+  std::string tmpstr(err_msg_ss.str());
+  const char *err_buffer = tmpstr.c_str();
+  std::vector<char> message( err_buffer, err_buffer + tmpstr.length());
+
+  ErlCommsPacketError cmd_body(code, message);
+
+  auto comms_pkt = erl_comms_packet(ReceivedPjonPacket, cmd_body);
+
+  // serialize the object into the buffer.
+  std::stringstream buffer;
+  msgpack::pack(buffer, comms_pkt);
+
+  // deserialize the buffer into msgpack::object instance.
+  buffer.seekg(0);
+  std::string packed(buffer.str());
+
+  write_port_cmd<pk_len_t>( (char*)packed.c_str(), packed.length());
 }
 
-// #define _STRINGIFY(X) #X
-// #define STRINGIFY(X) _STRINGIFY2(X)
-
-#define LOGFILE DEBUG_LOGFILE
+void transmitter_function(std::string buffer) {
+}
 
 int main(int argc, char const *argv[]) {
   const char *device = argv[1];
   int baud_rate = std::stoi(argv[2]);
 
-  #ifdef DEBUG_MODE // useful for debugging
-    std::ofstream out(LOGFILE);
-    std::streambuf *coutbuf = std::cout.rdbuf(); //save old buf
-    std::cerr.rdbuf(out.rdbuf()); //redirect std::cout to out.txt!
-  #endif
-
   std::cerr << "Setting serial... file: " << device << std::endl;
   std::cerr << "Setting serial... baud: " << baud_rate << std::endl;
-
-  PJON<ThroughSerial> bus(BUS_ADDR);
 
   // bus.strategy.set_serial(&serial);
   int s = serialOpen(device, baud_rate);

@@ -9,11 +9,12 @@ defmodule PjonElixirSerial.MixProject do
   def project do
     [
       app: :pjon_elixir_serial,
-      version: "0.1.2",
+      version: "0.2.0",
       elixir: "~> 1.5",
       start_permanent: Mix.env() == :prod,
       compilers: [:elixir_make] ++ Mix.compilers(),
       make_env: %{
+		    "BUFFER_SIZE" => "#{pjon_option(:buffer_size, 4096)}",
         "PACKET_SIZE" => "#{pjon_option(:packet_size, 256)}",
         "PJON_INCLUDE_PACKET_ID" => "#{pjon_option(:include_packet_id, true)}",
         "PJON_MAX_RECENT_PACKET_IDS" => "#{pjon_option(:max_recent_ids, 10)}",

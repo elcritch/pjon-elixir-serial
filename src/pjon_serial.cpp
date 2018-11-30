@@ -27,7 +27,7 @@ void error_handler(uint8_t code,
     std::cerr << "error: pjon connection lost" << std::endl;
   }
   else {
-    std::cerr << "error: pjon packet failure" << std::endl;
+    std::cerr << "error: pjon packet failure: code: " << code << std::endl;
   }
 }
 

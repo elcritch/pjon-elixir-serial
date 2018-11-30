@@ -14,20 +14,13 @@
 #include <atomic>
 #include <mutex>
 
-#define BUFFER_SIZE 4096
-#define BUS_ADDR 42
-#define TX_PACKET_ADDR 47
+#define MSGPACK_USE_DEFINE_MAP
 
-/* Maximum timeframe between transmission and synchronous acknowledgement. */
-/* #define TS_RESPONSE_TIME_OUT 10100 */
-
-// Max number of old packet ids stored to avoid duplication
-/* #define PJON_INCLUDE_PACKET_ID true */
-/* #define PJON_MAX_RECENT_PACKET_IDS 10 */
-
-/* #define PJON_PACKET_MAX_LENGTH */
+#include <msgpack.hpp>
 
 #define PJON_INCLUDE_TS true // Include only ThroughSerial
+
+#include <PJON.h>
 
 #define PACKET_SZ 2
 typedef uint16_t pk_len_t;
@@ -42,6 +35,13 @@ enum ErlCommandType {
   Settings = 6,
 };
 typedef enum ErlCommandType erl_cmd_e;
+
+MSGPACK_ADD_ENUM(ErlCommandType);
+
+struct Packet_Info_Wrapper : PJON_Packet_Info {
+  Packet_Info_Wrapper(const PJON_Packet_Info &pi) : PJON_Packet_Info(pi)
+  {}
+};
 
 typedef struct {
   std::uint32_t command;

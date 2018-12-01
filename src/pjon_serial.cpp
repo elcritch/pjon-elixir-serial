@@ -4,23 +4,48 @@
 #include <PJON.h>
 
 #include "erl_comm.hpp"
+#include "concurrentqueue.hpp"
 
-std::mutex packet_next_lock;
-ErlCommsPacketTx packet_next;
+
+// std::mutex packet_next_lock;
+// ErlCommsPacketTx packet_next;
+moodycamel::ConcurrentQueue<ErlCommsPacketTx> tx_via_pjon;
+moodycamel::ConcurrentQueue<std::string> tx_via_erl_comms;
 
 PJON<ThroughSerial> bus(BUS_ADDR);
 
 #include "pjon_msgpack.cpp"
 
-void receiver_function(uint8_t *payload,
+void receive_erl_comms_packet() {
+  char buffer[BUFFER_MAX];
+  pk_len_t cmd_sz = read_port_cmd<pk_len_t>( buffer, BUFFER_MAX);
+
+  if (cmd_sz == 0) {
+    std::cerr << "STDIN closed, exiting. " << std::endl;
+    exit(0);
+  }
+
+  handle_erl_comms_command(std::string(buffer, cmd_sz));
+  usleep(100);
+}
+
+void transmit_erl_comms_packet() {
+  std::string next_packet;
+  if (tx_via_erl_comms.try_dequeue(next_packet)) {
+    std::string buf;
+    write_port_cmd<pk_len_t>( (char*)buf.c_str(), buf.length());
+  }
+}
+
+void pjon_receiver_function(uint8_t *payload,
                        uint16_t length,
                        const PJON_Packet_Info &packet_info)
 {
   std::string packed = pack_erl_comms_send_cmd(payload, length, packet_info);
-  write_port_cmd<pk_len_t>( (char*)packed.c_str(), packed.length());
+  tx_via_erl_comms.enqueue(packed);
 }
 
-void error_handler(uint8_t code,
+void pjon_error_handler(uint8_t code,
                    uint16_t data,
                    void *custom_pointer)
 {
@@ -28,8 +53,9 @@ void error_handler(uint8_t code,
   write_port_cmd<pk_len_t>( (char*)packed.c_str(), packed.length());
 }
 
-void transmitter_function() {
-  if (packet_next_lock.try_lock()) {
+void transmit_pjon_packet() {
+  ErlCommsPacketTx packet_next;
+  if (tx_via_pjon.try_dequeue(packet_next)) {
 
     message_t m = packet_next.message;
     int result;
@@ -40,18 +66,7 @@ void transmitter_function() {
     } else {
       result = bus.send(addr, (char *) m.data(), m.size());
     }
-
-    // What happens if an exception is thrown above?
-    packet_next_lock.unlock();
   }
-}
-
-void read_erl_comms() {
-  if (packet_next_lock.try_lock()) {
-    handle_erl_comms_command();
-    packet_next_lock.unlock();
-  }
-  usleep(100);
 }
 
 int main(int argc, char const *argv[]) {
@@ -69,16 +84,16 @@ int main(int argc, char const *argv[]) {
     std::cerr << "Setting serial... baud: " << baud_rate << std::endl;
 
     // bus.strategy.set_serial(&serial);
-    int s = serialOpen(device, baud_rate);
-    if(int(s) < 0) {
+    int sd = serialOpen(device, baud_rate);
+    if(int(sd) < 0) {
       std::cerr << "Serial open fail!" << std::endl;
       exit(1);
     }
-    bus.strategy.set_serial(s);
+    bus.strategy.set_serial(sd);
 
     // bus.strategy.set_baud_rate(baud_rate);
-    bus.set_receiver(receiver_function);
-    bus.set_error(error_handler);
+    bus.set_receiver(pjon_receiver_function);
+    bus.set_error(pjon_error_handler);
 
     std::cerr << "Opening bus" << std::endl;
 
@@ -89,17 +104,29 @@ int main(int argc, char const *argv[]) {
     std::thread([&]{
       try {
           while (true) {
-            read_erl_comms();
+            receive_erl_comms_packet();
           }
       } catch (const std::exception &exc) {
           std::cerr << exc.what();
+          exit(11);
+      }
+    }).detach();
+
+    std::thread([&]{
+      try {
+        while (true) {
+          transmit_erl_comms_packet();
+        }
+      } catch (const std::exception &exc) {
+        std::cerr << exc.what();
+        exit(12);
       }
     }).detach();
 
       do {
         bus.receive(PJON_RX_WAIT_TIME);
         bus.update();
-        transmitter_function();
+        transmit_pjon_packet();
       } while (true);
 
     std::cerr << "exiting..." << std::endl;

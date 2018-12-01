@@ -15,6 +15,8 @@
 #include <mutex>
 #include <exception>
 #include <stdexcept>
+#include <functional>   // std::ref
+#include <memory>   // std::ref
 
 #define MSGPACK_USE_DEFINE_MAP
 
@@ -83,6 +85,11 @@ template <typename ErlCommsPacket>
 std::tuple<ErlCommsType, ErlCommsPacket> erl_comms_packet(ErlCommsType tp, ErlCommsPacket pkt) {
   return std::tuple<ErlCommsType, ErlCommsPacket>(tp, pkt);
 }
+
+struct ErlCommsStr {
+  std::string _str;
+  ErlCommsStr(ErlCommsStr &&) {} // Used-defined move constructor
+};
 
 size_t read_port_cmd(char *buffer, pk_len_t len);
 size_t write_port_cmd(uint8_t *buffer, pk_len_t packet_len);

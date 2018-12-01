@@ -63,14 +63,13 @@ std::string pack_erl_comms_send_cmd(
   return packed;
 }
 
-erl_comms_object parse_erl_comms(char *buffer, pk_len_t cmd_sz) {
-  std::string str(buffer, cmd_sz);
+erl_comms_object parse_erl_comms(std::string str) {
   msgpack::object_handle oh = msgpack::unpack(str.data(), str.size());
   msgpack::object mobject = oh.get();
 
-#ifdef DEBUG_MODE
-  std::cerr << "Read erl_comms message: " << mobject << std::endl;
-#endif // DEBUG_MODE
+  #ifdef DEBUG_MODE
+    std::cerr << "Read erl_comms message: " << mobject << std::endl;
+  #endif // DEBUG_MODE
 
   erl_comms_object comms_obj;
   mobject.convert(comms_obj);
@@ -78,22 +77,18 @@ erl_comms_object parse_erl_comms(char *buffer, pk_len_t cmd_sz) {
   return comms_obj;
 }
 
-void handle_erl_comms_command() {
-  char buffer[BUFFER_MAX];
-  pk_len_t cmd_sz = read_port_cmd<pk_len_t>( buffer, BUFFER_MAX);
-
-  if (cmd_sz == 0) {
-    std::cerr << "STDIN closed, exiting. " << std::endl;
-    exit(0);
-  }
+void handle_erl_comms_command(std::string erl_comms_buffer) {
+  erl_comms_object comms_obj = parse_erl_comms(erl_comms_buffer);
 
   try {
-    erl_comms_object comms_obj = parse_erl_comms(buffer, cmd_sz);
+    erl_comms_object comms_obj = parse_erl_comms(erl_comms_buffer);
 
     switch (comms_obj.get<0>()) {
     case SendPjonPacket: {
+      // Got an ErlComms command to send data via PJON
       ErlCommsPacketTx packet_next;
       comms_obj.get<1>().convert(packet_next);
+      tx_via_pjon.enqueue(packet_next);
       break;
     }
     case Invalid:

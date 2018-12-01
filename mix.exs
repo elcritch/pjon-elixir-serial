@@ -14,6 +14,7 @@ defmodule PjonElixirSerial.MixProject do
       start_permanent: Mix.env() == :prod,
       compilers: [:elixir_make] ++ Mix.compilers(),
       make_env: %{
+        "PJON_STRATEGY" => "#{pjon_option(:pjon_strategy, "ThroughSerial")}",
         "PACKET_SIZE" => "#{pjon_option(:packet_size, 256)}",
         "PJON_INCLUDE_PACKET_ID" => "#{pjon_option(:include_packet_id, true)}",
         "PJON_MAX_RECENT_PACKET_IDS" => "#{pjon_option(:max_recent_ids, 10)}",

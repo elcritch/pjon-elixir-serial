@@ -13,6 +13,8 @@
 #include <fstream>
 #include <atomic>
 #include <mutex>
+#include <exception>
+#include <stdexcept>
 
 #define MSGPACK_USE_DEFINE_MAP
 
@@ -22,6 +24,9 @@
 
 #include <PJON.h>
 
+#ifndef BUFFER_MAX
+#define BUFFER_MAX 4096
+#endif
 #define PACKET_SZ 2
 typedef uint16_t pk_len_t;
 
@@ -39,6 +44,7 @@ MSGPACK_ADD_ENUM(ErlCommsType);
 
 typedef std::vector<unsigned char> message_t;
 typedef std::vector<char> message_str_t;
+typedef msgpack::type::tuple<ErlCommsType, msgpack::object> erl_comms_object;
 
 struct ErlCommsPacketInfo : PJON_Packet_Info {
   ErlCommsPacketInfo(const PJON_Packet_Info &pi) : PJON_Packet_Info(pi)
@@ -48,8 +54,9 @@ struct ErlCommsPacketInfo : PJON_Packet_Info {
 
 struct ErlCommsPacketTx {
   std::uint32_t addr;
+  bool blocking;
   message_t message;
-  MSGPACK_DEFINE(addr, message);
+  MSGPACK_DEFINE(addr, blocking, message);
 };
 
 struct ErlCommsPacketRx {

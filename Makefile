@@ -17,7 +17,8 @@ all:
 		-DDEBUG_MODE=$(DEBUG_MODE) \
 		-DDEBUG_LOGFILE="\"$(DEBUG_LOGFILE)\"" \
 		-I. -Isrc/PJON/src -Isrc/periphery -Isrc/goodform/include/ -std=gnu++11 \
-		src/pjon_serial.cpp -o priv/pjon_serial -lpthread -lm
+		src/pjon_serial.cpp \
+		-o priv/pjon_serial -lpthread -lm
 
 clean:
 	rm priv/pjon_serial src/*.o

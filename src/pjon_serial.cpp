@@ -71,7 +71,7 @@ int main(int argc, char const *argv[]) {
       if (port_rx_len.load() == 0) {
         // std::cerr << "port port_command reading... " << std::endl;
         pk_len_t cmd_sz =
-          read_port_cmd<pk_len_t>( port_rx_buffer, PJON_PACKET_MAX_LENGTH);
+          read_port_cmd<pk_len_t>(port_rx_buffer, PJON_PACKET_MAX_LENGTH);
         port_rx_len = cmd_sz;
         if (cmd_sz == 0) {
           std::cerr << "STDIN closed, exiting. " << std::endl;
@@ -83,8 +83,8 @@ int main(int argc, char const *argv[]) {
   }).detach();
 
   do {
-    bus.update();
     bus.receive(PJON_RX_WAIT_TIME);
+    bus.update();
 
     if (port_rx_len.load() > 0) {
       int rx_len = port_rx_len.load();

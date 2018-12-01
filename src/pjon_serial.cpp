@@ -124,8 +124,8 @@ int main(int argc, char const *argv[]) {
     }).detach();
 
       do {
-        bus.receive(PJON_RX_WAIT_TIME);
         bus.update();
+        bus.receive(PJON_RX_WAIT_TIME);
         transmit_pjon_packet();
       } while (true);
 

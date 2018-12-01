@@ -8,10 +8,6 @@
 std::atomic<size_t> port_rx_len;
 char port_rx_buffer[BUFFER_SIZE];
 
-// #include "goodform/variant.hpp"
-// #include "goodform/form.hpp"
-// #include "goodform/msgpack.hpp"
-
 void receiver_function(uint8_t *payload,
                        uint16_t length,
                        const PJON_Packet_Info &packet_info)

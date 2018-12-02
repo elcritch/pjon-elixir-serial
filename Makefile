@@ -4,7 +4,10 @@
 
 # -D=$() \
 
-all:
+wiringpi:
+	$(MAKE) -C src/WiringPi/
+
+all: wiringpi
 	$(CXX) -D$(DEVICE_TYPE) \
     -Isrc/WiringPi \
 		-DSERIAL_FREAD_LOOP_DELAY=$(SERIAL_FREAD_LOOP_DELAY) \

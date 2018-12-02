@@ -27,6 +27,14 @@ void error_handler(uint8_t code,
   }
 }
 
+#ifndef SERIAL_FREAD_LOOP_DELAY
+#define SERIAL_FREAD_LOOP_DELAY 2000
+#endif
+
+#ifndef SERIAL_SREAD_LOOP_DELAY
+#define SERIAL_SREAD_LOOP_DELAY 500
+#endif
+
 // #define _STRINGIFY(X) #X
 // #define STRINGIFY(X) _STRINGIFY2(X)
 
@@ -78,7 +86,7 @@ int main(int argc, char const *argv[]) {
           exit(0);
         }
       }
-      usleep(100);
+      usleep(SERIAL_FREAD_LOOP_DELAY);
     }
   }).detach();
 
@@ -97,6 +105,7 @@ int main(int argc, char const *argv[]) {
 
       port_rx_len = 0;
     }
+    usleep(SERIAL_SREAD_LOOP_DELAY);
   } while (true);
 
   std::cerr << "exiting..." << std::endl;

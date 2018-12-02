@@ -25,7 +25,7 @@ std::string pack_command(erl_cmd_e type, char *data) {
 }
 
 erlcmd_t unpack_command(char *rawcommand) {
-  std::stringstream ss; 
+  std::stringstream ss;
   goodform::any var;
 
   ss << rawcommand;

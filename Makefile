@@ -11,9 +11,7 @@ all: wiringpi
 	@echo device: $(DEVICE)
 	$(CXX) -D$(DEVICE_TYPE) \
     -Isrc/WiringPi/wiringPi/ \
-ifeq ($(DEVICE_TYPE), RPI)
 		src/WiringPi/wiringPi/libwiringPi.so.2.46 \
-endif
 		-DSERIAL_FREAD_LOOP_DELAY=$(SERIAL_FREAD_LOOP_DELAY) \
 		-DSERIAL_SREAD_LOOP_DELAY=$(SERIAL_SREAD_LOOP_DELAY) \
 		-DPJON_STRATEGY=$(PJON_STRATEGY) \

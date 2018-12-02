@@ -6,12 +6,13 @@
 
 DEVICE = $(DEVICE_TYPE)
 
+LIB_RPI =
 
 all: wiringpi
 	@echo device: $(DEVICE)
 	$(CXX) -D$(DEVICE_TYPE) \
     -Isrc/WiringPi/wiringPi/ \
-		src/WiringPi/wiringPi/libwiringPi.so.2.46 \
+		$(LIB_RPI) \
 		-DSERIAL_FREAD_LOOP_DELAY=$(SERIAL_FREAD_LOOP_DELAY) \
 		-DSERIAL_SREAD_LOOP_DELAY=$(SERIAL_SREAD_LOOP_DELAY) \
 		-DPJON_STRATEGY=$(PJON_STRATEGY) \
@@ -36,6 +37,8 @@ clean:
 wiringpi:
 ifeq ($(DEVICE_TYPE), RPI)
 	$(MAKE) -C src/WiringPi/wiringPi/
+	LIB_RPI = -llibwiringPi.so.2.46 -Lsrc/WiringPi/wiringPi/
+else
 endif
 
 

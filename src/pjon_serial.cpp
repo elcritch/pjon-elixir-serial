@@ -45,7 +45,7 @@ int main(int argc, char const *argv[]) {
   int baud_rate = std::stoi(argv[2]);
 
   #ifdef DEBUG_MODE // useful for debugging
-    std::ofstream out(LOGFILE);
+    std::ofstream out(DEBUG_LOGFILE);
     std::streambuf *coutbuf = std::cout.rdbuf(); //save old buf
     std::cerr.rdbuf(out.rdbuf()); //redirect std::cout to out.txt!
   #endif
@@ -77,10 +77,19 @@ int main(int argc, char const *argv[]) {
     port_rx_len = 0;
     while (true) {
       if (port_rx_len.load() == 0) {
-        // std::cerr << "port port_command reading... " << std::endl;
+
+        #ifdef DEBUG_VERBOSE
+          std::cerr << "erl_comms reading... " << std::endl;
+        #endif // DEBUG_VERBOSE
+
         pk_len_t cmd_sz =
           read_port_cmd<pk_len_t>(port_rx_buffer, PJON_PACKET_MAX_LENGTH);
         port_rx_len = cmd_sz;
+
+        #ifdef DEBUG_VERBOSE
+          std::cerr << " erl_comms read: " << cmd_sz << std::endl;
+        #endif // DEBUG_VERBOSE
+
         if (cmd_sz == 0) {
           std::cerr << "STDIN closed, exiting. " << std::endl;
           exit(0);
@@ -97,11 +106,22 @@ int main(int argc, char const *argv[]) {
     if (port_rx_len.load() > 0) {
       int rx_len = port_rx_len.load();
 
+      long start_time = micros();
+
       #if PJON_SEND_BLOCKING == true
         int resp = bus.send_packet_blocking(TX_PACKET_ADDR, port_rx_buffer, rx_len );
       #else
         int resp = bus.send_packet(TX_PACKET_ADDR, port_rx_buffer, rx_len);
       #endif
+
+#ifdef DEBUG_VERBOSE
+        long end_time = micros();
+        std::cerr << " pjon packet wrote: "
+                  << " time: " << (end_time - start_time)
+                  << " size: " << rx_len
+                  << " response: " << resp
+                  << std::endl;
+#endif // DEBUG_VERBOSE
 
       port_rx_len = 0;
     }

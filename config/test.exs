@@ -3,6 +3,7 @@ use Mix.Config
 config :pjon_elixir_serial, :device, System.get_env("MIX_UART") || "ttyACM0"
 
 config :pjon_elixir_serial, :compile_options,
+    debug_verbose: true,
     packet_size: 128,
     include_packet_id: true,
     max_recent_ids: 4096,

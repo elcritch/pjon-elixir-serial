@@ -16,6 +16,7 @@ all:
 		-DPJON_RX_WAIT_TIME=$(PJON_RX_WAIT_TIME) \
 		-DTS_MAX_ATTEMPTS=$(TS_MAX_ATTEMPTS) \
 		-DDEBUG_MODE=$(DEBUG_MODE) \
+		-DDEBUG_VERBOSE=$(DEBUG_VERBOSE) \
 		-DDEBUG_LOGFILE="\"$(DEBUG_LOGFILE)\"" \
 		-I. -Isrc/PJON/src -Isrc/periphery -Isrc/goodform/include/ -std=gnu++11 \
 		src/pjon_serial.cpp -o priv/pjon_serial -lpthread -lm 

@@ -15,6 +15,7 @@ defmodule PjonElixirSerial.MixProject do
       compilers: [:elixir_make] ++ Mix.compilers(),
       make_env: %{
         # "" => "#{pjon_option(:, 0)}",
+        "DEBUG_VERBOSE" => "#{pjon_option(:debug_verbose, 0)}",
         "PJON_MAX_PACKETS" => "#{pjon_option(:max_packets, 10)}",
         "PJON_RECEIVE_WHILE_SENDING_BLOCKING" => "#{pjon_option(:receive_while_sending_blocking, false)}",
         "SERIAL_FREAD_LOOP_DELAY" => "#{pjon_option(:serial_fread_loop_delay, 20000)}",

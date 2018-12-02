@@ -5,6 +5,40 @@
 
 #include "erl_comm.hpp"
 
+uint8_t back_off_degree = 4;
+uint8_t max_attempts = 20;
+uint16_t response_time_out = 14100;
+uint16_t byte_time_out = 100;
+
+struct FirmwareThroughSerial : public ThroughSerial {
+
+  uint32_t back_off(uint8_t attempts) {
+    uint32_t result = attempts;
+    for(uint8_t d = 0; d < back_off_degree; d++)
+      result *= (uint32_t)(attempts);
+    return result;
+  };
+
+  uint16_t receive_byte() {
+    return ThroughSerial::receive_byte(byte_time_out);
+  }
+
+  uint16_t receive_byte(uint32_t time_out) {
+    return ThroughSerial::receive_byte(time_out);
+  }
+
+  static uint8_t get_max_attempts() {
+    return max_attempts;
+  };
+
+  uint16_t receive_response() {
+    return receive_byte(response_time_out);
+  };
+};
+
+PJON<FirmwareThroughSerial> bus(BUS_ADDR);
+
+
 std::atomic<size_t> port_rx_len;
 char port_rx_buffer[BUFFER_SIZE];
 
@@ -27,17 +61,6 @@ void error_handler(uint8_t code,
   }
 }
 
-#ifndef SERIAL_FREAD_LOOP_DELAY
-#define SERIAL_FREAD_LOOP_DELAY 2000
-#endif
-
-#ifndef SERIAL_SREAD_LOOP_DELAY
-#define SERIAL_SREAD_LOOP_DELAY 500
-#endif
-
-// #define _STRINGIFY(X) #X
-// #define STRINGIFY(X) _STRINGIFY2(X)
-
 #define LOGFILE DEBUG_LOGFILE
 
 int main(int argc, char const *argv[]) {
@@ -53,9 +76,6 @@ int main(int argc, char const *argv[]) {
   std::cerr << "Setting serial... file: " << device << std::endl;
   std::cerr << "Setting serial... baud: " << baud_rate << std::endl;
 
-  PJON<PJON_STRATEGY> bus(BUS_ADDR);
-
-  // bus.strategy.set_serial(&serial);
   int s = serialOpen(device, baud_rate);
   if(int(s) < 0) {
     std::cerr << "Serial open fail!" << std::endl;

@@ -18,6 +18,33 @@
 #define BUS_ADDR 42
 #define TX_PACKET_ADDR 47
 
+#ifndef SERIAL_FREAD_LOOP_DELAY
+#define SERIAL_FREAD_LOOP_DELAY 2000
+#endif
+
+#ifndef SERIAL_SREAD_LOOP_DELAY
+#define SERIAL_SREAD_LOOP_DELAY 500
+#endif
+
+#ifndef BACK_OFF_DEGREE
+#define BACK_OFF_DEGREE 4
+#endif
+
+#ifndef MAX_ATTEMPTS
+#define MAX_ATTEMPTS 20
+#endif
+
+#ifndef RESPONSE_TIME_OUT
+#define RESPONSE_TIME_OUT 14100
+#endif
+
+#ifndef BYTE_TIME_OUT
+#define BYTE_TIME_OUT 100
+#endif
+
+// #define PJON_RECEIVE_WHILE_SENDING_BLOCKING true
+// #define PJON_MAX_PACKETS 8
+
 /* Maximum timeframe between transmission and synchronous acknowledgement. */
 /* #define TS_RESPONSE_TIME_OUT 10100 */
 

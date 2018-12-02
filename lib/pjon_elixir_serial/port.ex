@@ -36,7 +36,8 @@ defmodule PjonElixirSerial.Port do
     port_lib = :code.priv_dir(:pjon_elixir_serial)
     port_bin = Path.join(port_lib, "pjon_serial")
 
-    port_opts = [{:args, port_args}, :binary,
+    port_opts = [{:args, port_args},
+                 :binary,
                  :exit_status,
                  packet: 2,
                  env: [{'LD_LIBRARY_PATH', port_lib}]

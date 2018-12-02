@@ -2,7 +2,10 @@ use Mix.Config
 
 config :pjon_elixir_serial, :device, System.get_env("MIX_UART") || "ttyACM0"
 
+device_type = System.get_env("PJON_DEVICE_TYPE") || "LINUX"
+
 config :pjon_elixir_serial, :compile_options,
+    device_type: device_type,
     debug_verbose: true,
     packet_size: 128,
     include_packet_id: true,

@@ -39,7 +39,7 @@ defmodule PjonElixirSerial.Port do
     port_opts = [{:args, port_args}, :binary,
                  :exit_status,
                  packet: 2,
-                 env: [LD_LIBRARY_PATH: port_lib]]
+                 env: [LD_LIBRARY_PATH: "#{port_lib}"]]
 
     GenServer.cast(self(), :start)
     {:ok, %{port: nil, opts: port_opts, bin: port_bin}}

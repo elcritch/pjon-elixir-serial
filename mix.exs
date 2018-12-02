@@ -18,7 +18,7 @@ defmodule PjonElixirSerial.MixProject do
         "BACK_OFF_DEGREE" => "#{pjon_option(:back_off_degree, 4)}",
         "MAX_ATTEMPTS" => "#{pjon_option(:max_attempts, 20)}",
         "RESPONSE_TIME_OUT" => "#{pjon_option(:response_time_out, 14100)}",
-        "BYTE_TIME_OUT" => "#{pjon_option(:byte_time_out, 100)}",
+        "BYTE_TIME_OUT" => "#{pjon_option(:byte_time_out, 50_000)}",
         "DEBUG_VERBOSE" => "#{pjon_option(:debug_verbose, 0)}",
         "PJON_MAX_PACKETS" => "#{pjon_option(:max_packets, 10)}",
         "PJON_RECEIVE_WHILE_SENDING_BLOCKING" => "#{pjon_option(:receive_while_sending_blocking, false)}",

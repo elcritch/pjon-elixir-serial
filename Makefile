@@ -10,7 +10,7 @@ ifeq ($(DEVICE_TYPE), RPI)
 # LIB_RPI = -lwiringPi.so.2.46 -Lsrc/WiringPi/wiringPi/
 	LIB_RPI = src/WiringPi/wiringPi/libwiringPi.so.2.46
 else
-	LIB_RPI = 
+	LIB_RPI =
 endif
 
 all: wiringpi

@@ -129,12 +129,12 @@ int main(int argc, char const *argv[]) {
 
       #if PJON_SEND_BLOCKING == true
         #ifdef DEBUG_VERBOSE
-          std::cerr << " blocking send "
+          std::cerr << " blocking send ";
         #endif
         int resp = bus.send_packet_blocking(TX_PACKET_ADDR, port_rx_buffer, rx_len );
       #else
         #ifdef DEBUG_VERBOSE
-          std::cerr << " send "
+          std::cerr << " send ";
         #endif
         int resp = bus.send_packet(TX_PACKET_ADDR, port_rx_buffer, rx_len);
       #endif

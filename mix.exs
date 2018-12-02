@@ -18,7 +18,7 @@ defmodule PjonElixirSerial.MixProject do
         "SERIAL_FREAD_LOOP_DELAY" => "#{pjon_option(:serial_fread_loop_delay, 20000)}",
         "SERIAL_SREAD_LOOP_DELAY" => "#{pjon_option(:serial_sread_loop_delay, 20000)}",
         "PJON_STRATEGY" => "#{pjon_option(:pjon_strategy, "ThroughSerial")}",
-        "PACKET_SIZE" => "#{pjon_option(:packet_size, 256)}",
+        "PJON_PACKET_MAX_LENGTH" => "#{pjon_option(:packet_max_length, 64)}",
         "PJON_INCLUDE_PACKET_ID" => "#{pjon_option(:include_packet_id, true)}",
         "PJON_MAX_RECENT_PACKET_IDS" => "#{pjon_option(:max_recent_ids, 10)}",
         "TS_RESPONSE_TIME_OUT" => "#{pjon_option(:ts_response_timeout, 15100)}",

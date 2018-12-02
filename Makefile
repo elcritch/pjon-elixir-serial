@@ -6,13 +6,17 @@
 
 DEVICE = $(DEVICE_TYPE)
 
-LIB_RPI =
+ifeq ($(DEVICE_TYPE), RPI)
+# LIB_RPI = -lwiringPi.so.2.46 -Lsrc/WiringPi/wiringPi/
+	LIB_RPI = src/WiringPi/wiringPi/libwiringPi.so.2.46
+else
+	LIB_RPI = 
+endif
 
 all: wiringpi
 	@echo device: $(DEVICE)
 	$(CXX) -D$(DEVICE_TYPE) \
-    -Isrc/WiringPi/wiringPi/ \
-		$(LIB_RPI) \
+		-Isrc/WiringPi/wiringPi/ \
 		-DSERIAL_FREAD_LOOP_DELAY=$(SERIAL_FREAD_LOOP_DELAY) \
 		-DSERIAL_SREAD_LOOP_DELAY=$(SERIAL_SREAD_LOOP_DELAY) \
 		-DPJON_STRATEGY=$(PJON_STRATEGY) \
@@ -29,7 +33,8 @@ all: wiringpi
 		-DDEBUG_VERBOSE=$(DEBUG_VERBOSE) \
 		-DDEBUG_LOGFILE="\"$(DEBUG_LOGFILE)\"" \
 		-I. -Isrc/PJON/src -Isrc/periphery -Isrc/goodform/include/ -std=gnu++11 \
-		src/pjon_serial.cpp -o priv/pjon_serial -lpthread -lm
+		src/pjon_serial.cpp -o priv/pjon_serial -lpthread -lm \
+		$(LIB_RPI)
 
 clean:
 	rm priv/pjon_serial src/*.o
@@ -37,8 +42,6 @@ clean:
 wiringpi:
 ifeq ($(DEVICE_TYPE), RPI)
 	$(MAKE) -C src/WiringPi/wiringPi/
-	LIB_RPI = -llibwiringPi.so.2.46 -Lsrc/WiringPi/wiringPi/
-else
 endif
 
 

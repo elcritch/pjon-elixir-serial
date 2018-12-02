@@ -4,12 +4,13 @@
 
 # -D=$() \
 
-wiringpi:
-	$(MAKE) -C src/WiringPi/
+DEVICE = $(DEVICE_TYPE)
+
 
 all: wiringpi
+	@echo device: $(DEVICE)
 	$(CXX) -D$(DEVICE_TYPE) \
-    -Isrc/WiringPi \
+    -Isrc/WiringPi/wiringPi/ \
 		-DSERIAL_FREAD_LOOP_DELAY=$(SERIAL_FREAD_LOOP_DELAY) \
 		-DSERIAL_SREAD_LOOP_DELAY=$(SERIAL_SREAD_LOOP_DELAY) \
 		-DPJON_STRATEGY=$(PJON_STRATEGY) \
@@ -30,4 +31,10 @@ all: wiringpi
 
 clean:
 	rm priv/pjon_serial src/*.o
+
+wiringpi:
+ifeq ($(DEVICE_TYPE), RPI)
+	$(MAKE) -C src/WiringPi/wiringPi/
+endif
+
 

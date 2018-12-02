@@ -6,6 +6,8 @@ defmodule PjonElixirSerial.MixProject do
     |> Keyword.get(option, default)
   end
 
+  @device_type System.get_env("PJON_DEVICE_TYPE") || "LINUX"
+
   def project do
     [
       app: :pjon_elixir_serial,
@@ -15,7 +17,7 @@ defmodule PjonElixirSerial.MixProject do
       compilers: [:elixir_make] ++ Mix.compilers(),
       make_env: %{
         # "" => "#{pjon_option(:, 0)}",
-        "DEVICE_TYPE" => "#{pjon_option(:device_type, "LINUX")}",
+        "DEVICE_TYPE" => "#{pjon_option(:device_type, @device_type)}",
         "BACK_OFF_DEGREE" => "#{pjon_option(:back_off_degree, 4)}",
         "MAX_ATTEMPTS" => "#{pjon_option(:max_attempts, 20)}",
         "RESPONSE_TIME_OUT" => "#{pjon_option(:response_time_out, 14100)}",

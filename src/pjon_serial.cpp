@@ -5,10 +5,10 @@
 
 #include "erl_comm.hpp"
 
-uint8_t back_off_degree = 4;
-uint8_t max_attempts = 20;
-uint16_t response_time_out = 14100;
-uint16_t byte_time_out = 100;
+uint8_t back_off_degree = TS_BACK_OFF_DEGREE;
+uint8_t max_attempts = TS_MAX_ATTEMPTS;
+uint16_t response_time_out = RESPONSE_TIME_OUT;
+uint16_t byte_time_out = BYTE_TIME_OUT;
 
 struct FirmwareThroughSerial : public ThroughSerial {
 

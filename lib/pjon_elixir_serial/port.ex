@@ -33,9 +33,13 @@ defmodule PjonElixirSerial.Port do
 
     port_args = ["#{device_name}", "#{baud_rate}"]
 
-    port_bin = Path.join(:code.priv_dir(:pjon_elixir_serial), "pjon_serial")
+    port_lib = :code.priv_dir(:pjon_elixir_serial)
+    port_bin = Path.join(port_lib, "pjon_serial")
 
-    port_opts = [{:args, port_args}, :binary, :exit_status, packet: 2]
+    port_opts = [{:args, port_args}, :binary,
+                 :exit_status,
+                 packet: 2,
+                 env: [LD_LIBRARY_PATH: port_lib]]
 
     GenServer.cast(self(), :start)
     {:ok, %{port: nil, opts: port_opts, bin: port_bin}}

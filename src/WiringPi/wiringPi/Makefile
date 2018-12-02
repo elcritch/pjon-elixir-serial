@@ -70,7 +70,7 @@ OBJ	=	$(SRC:.c=.o)
 all:		$(DYNAMIC)
 
 .PHONY:	static
-static:	
+static:
 		$Q cat noMoreStatic
 
 $(DYNAMIC):	$(OBJ)

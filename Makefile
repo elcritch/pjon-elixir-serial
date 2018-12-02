@@ -1,8 +1,11 @@
+# ifeq ($(origin PACKET_SIZE), undefined)
+# $(error Bad Packet Size: $(PACKET_SIZE). Set $PACKET_SIZE with an appropriate value)
+# endif
 
 # -D=$() \
 
 all:
-	$(CXX) -DLINUX \
+	$(CXX) -D$(DEVICE_TYPE) \
 		-DSERIAL_FREAD_LOOP_DELAY=$(SERIAL_FREAD_LOOP_DELAY) \
 		-DSERIAL_SREAD_LOOP_DELAY=$(SERIAL_SREAD_LOOP_DELAY) \
 		-DPJON_STRATEGY=$(PJON_STRATEGY) \

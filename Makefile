@@ -1,6 +1,3 @@
-ifeq ($(origin PACKET_SIZE), undefined)
-$(error Bad Packet Size: $(PACKET_SIZE). Set $PACKET_SIZE with an appropriate value)
-endif
 
 # -D=$() \
 

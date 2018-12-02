@@ -42,7 +42,7 @@ clean:
 wiringpi:
 ifeq ($(DEVICE_TYPE), RPI)
 	$(MAKE) -C src/WiringPi/wiringPi/
-	cp src/WiringPi/wiringPi/libwiringPi.so.2.46 priv/
+	cp src/WiringPi/wiringPi/libwiringPi.so.2.46 priv/libwiringPi.so
 endif
 
 

@@ -83,7 +83,7 @@ int main(int argc, char const *argv[]) {
   PJON<ThroughSerial> bus(BUS_ADDR);
 
   bus.strategy.set_serial(s);
-  bus.strategy.set_baud_rate(baud_rate);
+  // bus.strategy.set_baud_rate(baud_rate);
   bus.set_receiver(receiver_function);
   bus.set_error(error_handler);
 

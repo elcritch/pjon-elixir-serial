@@ -36,8 +36,6 @@ struct FirmwareThroughSerial : public ThroughSerial {
   };
 };
 
-PJON<FirmwareThroughSerial> bus(BUS_ADDR);
-
 
 std::atomic<size_t> port_rx_len;
 char port_rx_buffer[BUFFER_SIZE];
@@ -81,6 +79,9 @@ int main(int argc, char const *argv[]) {
     std::cerr << "Serial open fail!" << std::endl;
     exit(1);
   }
+
+  PJON<ThroughSerial> bus(BUS_ADDR);
+
   bus.strategy.set_serial(s);
   bus.strategy.set_baud_rate(baud_rate);
   bus.set_receiver(receiver_function);

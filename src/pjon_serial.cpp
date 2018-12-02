@@ -98,7 +98,7 @@ int main(int argc, char const *argv[]) {
     while (true) {
       if (port_rx_len.load() == 0) {
 
-        #ifdef DEBUG_VERBOSE
+        #if DEBUG_VERBOSE > 0
           std::cerr << "erl_comms reading... " << std::endl;
         #endif // DEBUG_VERBOSE
 
@@ -106,7 +106,7 @@ int main(int argc, char const *argv[]) {
           read_port_cmd<pk_len_t>(port_rx_buffer, PJON_PACKET_MAX_LENGTH);
         port_rx_len = cmd_sz;
 
-        #ifdef DEBUG_VERBOSE
+        #if DEBUG_VERBOSE > 0
           std::cerr << " erl_comms read: " << cmd_sz << std::endl;
         #endif // DEBUG_VERBOSE
 
@@ -129,25 +129,25 @@ int main(int argc, char const *argv[]) {
       long start_time = micros();
 
       #if PJON_SEND_BLOCKING == true
-        #ifdef DEBUG_VERBOSE
+        #if DEBUG_VERBOSE > 0
           std::cerr << " blocking send ";
-        #endif
+        #endif // DEBUG_VERBOSE
         int resp = bus.send_packet_blocking(TX_PACKET_ADDR, port_rx_buffer, rx_len );
       #else
-        #ifdef DEBUG_VERBOSE
+        #if DEBUG_VERBOSE > 0
           std::cerr << " send ";
-        #endif
+        #endif // DEBUG_VERBOSE
         int resp = bus.send_packet(TX_PACKET_ADDR, port_rx_buffer, rx_len);
       #endif
 
-#ifdef DEBUG_VERBOSE
+      #if DEBUG_VERBOSE > 0
         long end_time = micros();
         std::cerr << " pjon packet wrote: "
                   << " time: " << (end_time - start_time)
                   << " size: " << rx_len
                   << " response: " << resp
                   << std::endl;
-#endif // DEBUG_VERBOSE
+      #endif // DEBUG_VERBOSE
 
       port_rx_len = 0;
     }

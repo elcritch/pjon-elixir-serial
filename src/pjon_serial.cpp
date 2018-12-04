@@ -36,6 +36,7 @@ uint16_t byte_time_out = BYTE_TIME_OUT;
 //   };
 // };
 
+
 std::atomic<size_t> port_rx_len;
 char port_rx_buffer[BUFFER_SIZE];
 
@@ -60,8 +61,6 @@ void error_handler(uint8_t code,
 
 #define LOGFILE DEBUG_LOGFILE
 
-PJON<ThroughSerialAsync> bus(BUS_ADDR);
-
 int main(int argc, char const *argv[]) {
   const char *device = argv[1];
   int baud_rate = std::stoi(argv[2]);
@@ -81,9 +80,13 @@ int main(int argc, char const *argv[]) {
     exit(1);
   }
 
-  bus.strategy.set_serial(s);
+  PJON<ThroughSerialAsync> bus(BUS_ADDR);
 
-#if defined(RPI) // needs to be set on RPI
+  bus.strategy.set_serial(s);
+  bus.set_synchronous_acknowledge(false);
+  // bus.set_asynchronous_acknowledge(true);
+
+#if defined(RPI) // useful for debugging
   bus.strategy.set_baud_rate(baud_rate);
 #endif
 
@@ -131,7 +134,7 @@ int main(int argc, char const *argv[]) {
 
       long start_time = micros();
 
-      #if PJON_SEND_BLOCKING == true
+      #ifdef PJON_SEND_BLOCKING
         #if DEBUG_VERBOSE > 0
           std::cerr << " blocking send ";
         #endif // DEBUG_VERBOSE
@@ -140,7 +143,7 @@ int main(int argc, char const *argv[]) {
         #if DEBUG_VERBOSE > 0
           std::cerr << " send ";
         #endif // DEBUG_VERBOSE
-        int resp = bus.send_packet(TX_PACKET_ADDR, port_rx_buffer, rx_len);
+        int resp = bus.send(TX_PACKET_ADDR, port_rx_buffer, rx_len);
       #endif
 
       #if DEBUG_VERBOSE > 0

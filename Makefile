@@ -2,7 +2,6 @@
 # $(error Bad Packet Size: $(PACKET_SIZE). Set $PACKET_SIZE with an appropriate value)
 # endif
 
-# -D=$() \
 
 DEVICE = $(DEVICE_TYPE)
 
@@ -13,10 +12,16 @@ else
 	LIB_RPI =
 endif
 
+# -D=$() \
+
 all: wiringpi
 	@echo device: $(DEVICE)
 	$(CXX) -D$(DEVICE_TYPE) \
 		-Isrc/WiringPi/wiringPi/ \
+		-DPJON_SEND_TYPE=$(PJON_SEND_TYPE) \
+		-DTS_BACK_OFF_DEGREE=$(TS_BACK_OFF_DEGREE) \
+		-DTS_MAX_ATTEMPTS=$(TS_MAX_ATTEMPTS) \
+		-DTS_BYTE_TIME_OUT=$(TS_BYTE_TIME_OUT) \
 		-DSERIAL_FREAD_LOOP_DELAY=$(SERIAL_FREAD_LOOP_DELAY) \
 		-DSERIAL_SREAD_LOOP_DELAY=$(SERIAL_SREAD_LOOP_DELAY) \
 		-DPJON_STRATEGY=$(PJON_STRATEGY) \

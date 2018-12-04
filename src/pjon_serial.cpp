@@ -10,32 +10,31 @@ uint8_t max_attempts = TS_MAX_ATTEMPTS;
 uint16_t response_time_out = RESPONSE_TIME_OUT;
 uint16_t byte_time_out = BYTE_TIME_OUT;
 
-struct FirmwareThroughSerial : public ThroughSerial {
+// struct FirmwareThroughSerial : public ThroughSerial {
 
-  uint32_t back_off(uint8_t attempts) {
-    uint32_t result = attempts;
-    for(uint8_t d = 0; d < back_off_degree; d++)
-      result *= (uint32_t)(attempts);
-    return result;
-  };
+//   uint32_t back_off(uint8_t attempts) {
+//     uint32_t result = attempts;
+//     for(uint8_t d = 0; d < back_off_degree; d++)
+//       result *= (uint32_t)(attempts);
+//     return result;
+//   };
 
-  uint16_t receive_byte() {
-    return ThroughSerial::receive_byte(byte_time_out);
-  }
+//   uint16_t receive_byte() {
+//     return ThroughSerial::receive_byte(byte_time_out);
+//   }
 
-  uint16_t receive_byte(uint32_t time_out) {
-    return ThroughSerial::receive_byte(time_out);
-  }
+//   uint16_t receive_byte(uint32_t time_out) {
+//     return ThroughSerial::receive_byte(time_out);
+//   }
 
-  static uint8_t get_max_attempts() {
-    return max_attempts;
-  };
+//   static uint8_t get_max_attempts() {
+//     return max_attempts;
+//   };
 
-  uint16_t receive_response() {
-    return receive_byte(response_time_out);
-  };
-};
-
+//   uint16_t receive_response() {
+//     return receive_byte(response_time_out);
+//   };
+// };
 
 std::atomic<size_t> port_rx_len;
 char port_rx_buffer[BUFFER_SIZE];
@@ -61,6 +60,8 @@ void error_handler(uint8_t code,
 
 #define LOGFILE DEBUG_LOGFILE
 
+PJON<ThroughSerialAsync> bus(BUS_ADDR);
+
 int main(int argc, char const *argv[]) {
   const char *device = argv[1];
   int baud_rate = std::stoi(argv[2]);
@@ -80,11 +81,9 @@ int main(int argc, char const *argv[]) {
     exit(1);
   }
 
-  PJON<ThroughSerial> bus(BUS_ADDR);
-
   bus.strategy.set_serial(s);
 
-#if defined(RPI) // useful for debugging
+#if defined(RPI) // needs to be set on RPI
   bus.strategy.set_baud_rate(baud_rate);
 #endif
 

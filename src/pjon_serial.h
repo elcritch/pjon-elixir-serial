@@ -55,6 +55,7 @@
 /* #define PJON_PACKET_MAX_LENGTH */
 
 #define PJON_INCLUDE_TS true // Include only ThroughSerial
+#define PJON_INCLUDE_TSA true // Include only ThroughSerial
 
 #define PACKET_SZ 2
 typedef uint16_t pk_len_t;

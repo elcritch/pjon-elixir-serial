@@ -21,7 +21,7 @@ defmodule PjonElixirSerial.MixProject do
         "DEVICE_TYPE" => "#{pjon_option(:device_type, @device_type)}",
         "TS_BACK_OFF_DEGREE" => "#{pjon_option(:back_off_degree, 4)}",
         "TS_MAX_ATTEMPTS" => "#{pjon_option(:max_attempts, 20)}",
-        "TS_RESPONSE_TIME_OUT" => "#{pjon_option(:response_time_out, 114100)}",
+        "TS_RESPONSE_TIME_OUT" => "#{pjon_option(:response_time_out, 114_100)}",
         "TS_BYTE_TIME_OUT" => "#{pjon_option(:byte_time_out, 50_000)}",
         "DEBUG_VERBOSE" => "#{pjon_option(:debug_verbose, 0)}",
         "PJON_MAX_PACKETS" => "#{pjon_option(:max_packets, 10)}",
@@ -42,7 +42,7 @@ defmodule PjonElixirSerial.MixProject do
         "DEBUG_LOGFILE" => "#{pjon_option(:debug_mode_logfile, "/tmp/pjon_serial.txt")}",
       },
       deps: deps()
-    ]
+    ] |> IO.inspect(label: :MAKE_ENV)
   end
 
   def application do

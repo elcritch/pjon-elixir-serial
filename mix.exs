@@ -17,11 +17,11 @@ defmodule PjonElixirSerial.MixProject do
       compilers: [:elixir_make] ++ Mix.compilers(),
       make_env: %{
         # "" => "#{pjon_option(:, 0)}",
-        "PJON_SEND_TYPE" => "#{pjon_option(:send_type, "send")}",
+        "PJON_SEND_TYPE" => "#{pjon_option(:send_type, "send_packet")}",
         "DEVICE_TYPE" => "#{pjon_option(:device_type, @device_type)}",
         "TS_BACK_OFF_DEGREE" => "#{pjon_option(:back_off_degree, 4)}",
         "TS_MAX_ATTEMPTS" => "#{pjon_option(:max_attempts, 20)}",
-        "TS_RESPONSE_TIME_OUT" => "#{pjon_option(:response_time_out, 14100)}",
+        "TS_RESPONSE_TIME_OUT" => "#{pjon_option(:response_time_out, 114100)}",
         "TS_BYTE_TIME_OUT" => "#{pjon_option(:byte_time_out, 50_000)}",
         "DEBUG_VERBOSE" => "#{pjon_option(:debug_verbose, 0)}",
         "PJON_MAX_PACKETS" => "#{pjon_option(:max_packets, 10)}",

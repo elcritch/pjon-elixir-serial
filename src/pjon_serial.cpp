@@ -83,8 +83,6 @@ int main(int argc, char const *argv[]) {
   PJON<ThroughSerialAsync> bus(BUS_ADDR);
 
   bus.strategy.set_serial(s);
-  bus.set_synchronous_acknowledge(false);
-  // bus.set_asynchronous_acknowledge(true);
 
 #if defined(RPI) // useful for debugging
   bus.strategy.set_baud_rate(baud_rate);
@@ -134,17 +132,10 @@ int main(int argc, char const *argv[]) {
 
       long start_time = micros();
 
-      #ifdef PJON_SEND_BLOCKING
-        #if DEBUG_VERBOSE > 0
-          std::cerr << " blocking send ";
-        #endif // DEBUG_VERBOSE
-        int resp = bus.send_packet_blocking(TX_PACKET_ADDR, port_rx_buffer, rx_len );
-      #else
-        #if DEBUG_VERBOSE > 0
-          std::cerr << " send ";
-        #endif // DEBUG_VERBOSE
-        int resp = bus.send(TX_PACKET_ADDR, port_rx_buffer, rx_len);
-      #endif
+      #if DEBUG_VERBOSE > 0
+        std::cerr << " blocking " #PJON_SEND_TYPE " ";
+      #endif // DEBUG_VERBOSE
+        int resp = bus.PJON_SEND_TYPE(TX_PACKET_ADDR, port_rx_buffer, rx_len );
 
       #if DEBUG_VERBOSE > 0
         long end_time = micros();

@@ -6,8 +6,7 @@ device_type = (System.get_env("PJON_DEVICE_TYPE") || "LINUX")
 
 config :pjon_elixir_serial, :compile_options,
   device_type: device_type,
-  send_type: "send",
-  serial_fread_loop_delay: 30_000,
+  send_type: "sends",
   serial_fread_loop_delay: 30_000,
   serial_sread_loop_delay: 40_000,
   packet_size: 128,

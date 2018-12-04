@@ -83,6 +83,10 @@ int main(int argc, char const *argv[]) {
   PJON<ThroughSerialAsync> bus(BUS_ADDR);
 
   bus.strategy.set_serial(s);
+  bus.set_packet_id(true);
+  // bus.set_synchronous_acknowledge(false);
+  // bus.set_asynchronous_acknowledge(true);
+
 
 #if defined(RPI) // useful for debugging
   bus.strategy.set_baud_rate(baud_rate);

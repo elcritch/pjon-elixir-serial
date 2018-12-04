@@ -16,6 +16,9 @@ endif
 
 all: wiringpi
 	@echo device: $(DEVICE)
+	$(warning $(shell env))
+
+
 	$(CXX) -D$(DEVICE_TYPE) \
 		-Isrc/WiringPi/wiringPi/ \
 		-DPJON_SEND_TYPE=$(PJON_SEND_TYPE) \

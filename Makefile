@@ -19,7 +19,7 @@ all: wiringpi
 	$(warning $(shell env))
 
 
-	$(CXX) -D$(DEVICE_TYPE) \
+	$(CXX) -DDEVICE=$(DEVICE_TYPE) -D$(DEVICE_TYPE) \
 		-Isrc/WiringPi/wiringPi/ \
 		-DPJON_SEND_TYPE=$(PJON_SEND_TYPE) \
 		-DTS_BACK_OFF_DEGREE=$(TS_BACK_OFF_DEGREE) \

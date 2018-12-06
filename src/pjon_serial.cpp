@@ -89,7 +89,7 @@ int main(int argc, char const *argv[]) {
 
 
 #ifdef RPI // set for rpi
-  bus.strategy.set_baud_rate(250 * 1000 );
+  bus.strategy.set_baud_rate(RPI_BAUD_CORRECTION);
 #endif
 
   bus.set_receiver(receiver_function);

@@ -17,6 +17,7 @@ defmodule PjonElixirSerial.MixProject do
       compilers: [:elixir_make] ++ Mix.compilers(),
       make_env: %{
         # "" => "#{pjon_option(:, 0)}",
+        "RPI_BAUD_CORRECTION" => "#{pjon_option(:rpi_baud_correction, 0)}",
         "PJON_SEND_TYPE" => "#{pjon_option(:send_type, "send")}",
         "DEVICE_TYPE" => "#{pjon_option(:device_type, @device_type)}",
         "TS_BACK_OFF_DEGREE" => "#{pjon_option(:back_off_degree, 4)}",
@@ -36,7 +37,6 @@ defmodule PjonElixirSerial.MixProject do
         "TX_PACKET_ADDR" => "#{pjon_option(:tx_packet_addr, 47)}",
         "PJON_SEND_BLOCKING" => "#{pjon_option(:blocking_send, true)}",
         "PJON_RX_WAIT_TIME" => "#{pjon_option(:rx_wait_time, 10000)}",
-        "TS_MAX_ATTEMPTS" => "#{pjon_option(:ts_max_attempts, 10)}",
         "DEBUG_MODE" => "#{pjon_option(:debug_mode, false)}",
         "DEBUG_LOGFILE" => "#{pjon_option(:debug_mode_logfile, "/tmp/pjon_serial.txt")}",
       },

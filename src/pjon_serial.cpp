@@ -88,9 +88,9 @@ int main(int argc, char const *argv[]) {
   // bus.set_asynchronous_acknowledge(true);
 
 
-#ifdef RPI // useful for debugging
-  bus.strategy.set_baud_rate(baud_rate);
-#endif
+// #ifdef RPI // useful for debugging
+//   bus.strategy.set_baud_rate(baud_rate);
+// #endif
 
   bus.set_receiver(receiver_function);
   bus.set_error(error_handler);

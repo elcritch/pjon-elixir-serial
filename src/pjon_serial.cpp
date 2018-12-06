@@ -88,7 +88,7 @@ int main(int argc, char const *argv[]) {
   // bus.set_asynchronous_acknowledge(true);
 
 
-#if defined(RPI) // useful for debugging
+#if device == RPI // useful for debugging
   bus.strategy.set_baud_rate(baud_rate);
 #endif
 

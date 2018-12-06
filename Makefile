@@ -19,7 +19,7 @@ all: wiringpi
 	$(warning $(shell env))
 
 
-	$(CXX) -DDEVICE=$(DEVICE_TYPE)
+	$(CXX) -DDEVICE=$(DEVICE_TYPE) \
 		-D$(DEVICE_TYPE) \
 		-DRPI_BAUD_CORRECTION=$(RPI_BAUD_CORRECTION) \
 		-Isrc/WiringPi/wiringPi/ \
